@@ -208,13 +208,13 @@ var Parser = (function() {
 					return [lexer.lex.ref];
 				}
 			},
-			leftpar: function() {
-				if(lexer.isNextConsume('(')) {
+			leftPar: function() {
+				if(lexer.isNextConsume('(') || lexer.isNextConsume('{')) {
 					lexer.emit(type.LEFTPAR);
 				}
 			},
-			rightpar: function() {
-				if(lexer.isNextConsume(')')) {
+			rightPar: function() {
+				if(lexer.isNextConsume(')') || lexer.isNextConsume('}')) {
 					lexer.emit(type.RIGHTPAR);
 				}
 			},
@@ -428,6 +428,7 @@ var Parser = (function() {
 
 	function getPresedence(token) {
 		switch(token.type) {
+		case type.LIST:			
 		case type.LEFTPAR:
 			return -1;			
 		case type.SUB:
@@ -440,7 +441,6 @@ var Parser = (function() {
 			return 2;
 		case type.RANGE:
 		case type.ISECT:
-		case type.LIST:
 		case type.FUNC:
 			return 3;
 		default:
@@ -450,38 +450,38 @@ var Parser = (function() {
 
 	function convertStackFromInfixToPostfix(stack) {
 
-		// function logStack(stack) {
-		// 	var out = "";
-		// 	stack.forEach(function(t) {
-		// 		out += out == "" ? '[ ' + t.val + ' ]' : ' [ ' + t.val + ' ]';
-		// 	});
-		// 	return out;
-		// }
+		function logStack(stack) {
+			var out = "";
+			stack.forEach(function(t) {
+				out += t.val
+			});
+			return out;
+		}
 
 		newStack = [];
 		operatorStack = [];
 		while(stack.length > 0) {
 			var token = stack.shift();
-			// console.log('new token: ' + token.val);
+			console.log('new token: ' + token.val);
 			if(isOperand(token)) {
 				newStack.push(token);
-				// console.log('pushing it to stack as it is an operand: ' + logStack(newStack));
+				console.log('pushing it to stack as it is an operand: ' + logStack(newStack));
 			} else {
 				if(operatorStack.length === 0 || token.type === type.LEFTPAR) {
 					operatorStack.push(token);
-					// console.log('pushing it to operatorStack as ' + (token.type !== type.LEFTPAR ? 'stack is zero lenght' : 'token is "("') + ': ' + logStack(operatorStack));
+					console.log('pushing it to operatorStack as ' + (token.type !== type.LEFTPAR ? 'stack is zero lenght' : 'token is "("') + ': ' + logStack(operatorStack));
 				} else {
 					if(token.type === type.RIGHTPAR) {
-						// console.log('token is ")" initiating pop')
+						console.log('token is ")" initiating pop')
 						while(operatorStack.length > 0) {
-							// console.log('still more elements on the stack: ' + logStack(operatorStack));
+							console.log('still more elements on the stack: ' + logStack(operatorStack));
 							var operator = operatorStack.pop();
 							if(operator.type === type.LEFTPAR) {
-								// console.log('operator is "(", stopping pop')
+								console.log('operator is "(", stopping pop')
 								break;
 							}
 							newStack.push(operator);
-							// console.log('operator is "' + operator.val + '" pushing it to stack: ' + logStack(operatorStack))
+							console.log('operator is "' + operator.val + '" pushing it to stack: ' + logStack(operatorStack))
 						}
 					} else {
 						while(true) {
@@ -489,24 +489,24 @@ var Parser = (function() {
 								break;
 							}
 							operator = operatorStack.pop();
-							if(!hasHigherOrEqualPrecedence(operator, token)) {
+							if(!hasHigherOrEqualPrecedence(operator, token) || operator.type === type.LEFTPAR) {
 								operatorStack.push(operator);
 								break;
 							}
 							newStack.push(operator);
-							// console.log('popping operator "' + operator.val + '" (as it has higher precedence than token "' + token.val + '") and pushing it onto result: ' + logStack(newStack));
+							console.log('popping operator "' + operator.val + '" (as it has higher precedence than token "' + token.val + '") and pushing it onto result: ' + logStack(newStack));
 						}
 						operatorStack.push(token);
-						// console.log('pushing operator "' + token.val + '" (as it has lower precedence): ' + logStack(operatorStack));
+						console.log('pushing operator "' + token.val + '" (as it has lower precedence): ' + logStack(operatorStack));
 					}
 				}
 			}
 		}
 		while(operatorStack.length > 0) {
-			// console.log('operator has more elements, popping and pushing');
+			console.log('operator has more elements, popping and pushing');
 			newStack.push(operatorStack.pop());
 		}
-		// console.log(logStack(newStack))
+		console.log(logStack(newStack))
 		return newStack;
 	}
 

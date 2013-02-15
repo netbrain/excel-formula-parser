@@ -126,11 +126,15 @@ test( "lex tMissingArg", function() {
   equal(Parser.parse('SUM(1,,,2)'),3);
 });
 
-test("SUM",function(){
+test( "lex tArray", function() {
+  equal(Parser.parse('SUM({1,2})'),3);
+  equal(Parser.parse('SUM({1,2,3})'),6);
+  equal(Parser.parse('SUM({1,,3})'),4);
+});
+test( "SUM",function(){
   //TODO equal(Parser.parse('SUM( A1:A5 )'),35);
-  //TODO 5+6 doesn't work if not wrapped in (). fix by adding , to postfix converter.
-  equal(Parser.parse('SUM((5+6),7,8,9)'),35);
+  equal(Parser.parse('SUM(5+6,7,8,9)'),35);
   //TODO equal(Parser.parse('SUM(A1:A3,8,9'),35);
   //TODO equal(Parser.parse('SUM(A1,A2,A3,"8","9"'),35);
-  //TODO equal(Parser.parse('SUM({5,6,7},8,9),35);
+  equal(Parser.parse('SUM({5,6,7},8,9)'),35);
 });
