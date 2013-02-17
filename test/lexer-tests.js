@@ -191,3 +191,18 @@ test( "SUM",function(){
   equal(p.parse('SUM(A1,A2,A3,"8","9")'),35);
   equal(p.parse('SUM({5,6,7},8,9)'),35);
 });
+
+test("ISREF",function(){
+  p.setData({
+    A1:23.8,
+    A2:-23.8,
+    A3:0,
+    A4:'"string"',
+  });
+  ok(p.parse('ISREF(A1)'));
+  ok(p.parse('ISREF(A2)'));
+  ok(p.parse('ISREF(A3)'));
+  ok(p.parse('ISREF(A4)'));
+  ok(!p.parse('ISREF(5)'));
+  ok(!p.parse('ISREF("5")'));  
+})
