@@ -959,8 +959,12 @@ var fn = {
 	"SUM": function(a) {
 		var sum = 0;
 		for(var x = 0; x < a.length; x++) {
-			if(this.ISNUMBER(a[x])){
-				sum += a[x];
+			if(!isNaN(a[x])){
+				if(!this.ISNUMBER(a[x])){
+					sum += parseFloat(a[x]);
+				}else{
+					sum += a[x];
+				}
 			}
 		}
 		return sum;
@@ -1149,9 +1153,9 @@ var fn = {
 		throw "not implemented";
 	},
 	"ISNUMBER": function(v) {
-		return !isNaN(v);
+		return v != null && typeof(v.valueOf()) === "number";
 	},
-	"ISREF": function() {
+	"ISREF": function(v) {
 		throw "not implemented";
 	},
 	"ISTEXT	": function() {
