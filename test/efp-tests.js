@@ -1,4 +1,6 @@
 var p;
+var TRUE = Parser.Bool.TRUE;
+var FALSE = Parser.Bool.FALSE;  
 
 QUnit.testStart = function (name) {
   p = Parser.newInstance();
@@ -62,37 +64,37 @@ test( "lex tConcat", function() {
 });
 
 test( "lex tLT", function() {
-  equal(p.parse('2<4'), true);
-  equal(p.parse('4<2'), false);
+  equal(p.parse('2<4'), TRUE);
+  equal(p.parse('4<2'), FALSE);
 });
 
 test( "lex tLE", function() {
-  equal(p.parse('2<=4'), true);
-  equal(p.parse('4<=2'), false);
-  equal(p.parse('3<=3'), true);
+  equal(p.parse('2<=4'), TRUE);
+  equal(p.parse('4<=2'), FALSE);
+  equal(p.parse('3<=3'), TRUE);
 });
 
 test( "lex tEQ", function() {
-  equal(p.parse('2=4'), false);
-  equal(p.parse('4=2'), false);
-  equal(p.parse('3=3'), true);
+  equal(p.parse('2=4'), FALSE);
+  equal(p.parse('4=2'), FALSE);
+  equal(p.parse('3=3'), TRUE);
 });
 
 test( "lex tGE", function() {
-  equal(p.parse('2>=4'), false);
-  equal(p.parse('4>=2'), true);
-  equal(p.parse('3>=3'), true);
+  equal(p.parse('2>=4'), FALSE);
+  equal(p.parse('4>=2'), TRUE);
+  equal(p.parse('3>=3'), TRUE);
 });
 
 test( "lex tGT", function() {
-  equal(p.parse('2>4'), false);
-  equal(p.parse('4>2'), true);
+  equal(p.parse('2>4'), FALSE);
+  equal(p.parse('4>2'), TRUE);
 });
 
 test( "lex tNE", function() {
-  equal(p.parse('2<>4'), true);
-  equal(p.parse('4<>2'), true);
-  equal(p.parse('3<>3'), false);
+  equal(p.parse('2<>4'), TRUE);
+  equal(p.parse('4<>2'), TRUE);
+  equal(p.parse('3<>3'), FALSE);
 });
 
 test( "lex tRef", function() {
@@ -165,8 +167,8 @@ test( "lex tArray", function() {
 });
 
 test( "lex tBool", function() {
-  equal(p.parse('TRUE'),true);
-  equal(p.parse('FALSE'),false);
+  equal(p.parse('TRUE'),TRUE);
+  equal(p.parse('FALSE'),FALSE);
 });
 
 test("ISNUMBER",function(){
@@ -176,12 +178,12 @@ test("ISNUMBER",function(){
     A3:0,
     A4:'"string"',
   });
-  ok(p.parse('ISNUMBER(A1)'));
-  ok(p.parse('ISNUMBER(A2)'));
-  ok(p.parse('ISNUMBER(A3)'));
-  ok(!p.parse('ISNUMBER(A4)'));
-  ok(p.parse('ISNUMBER(5)'));
-  ok(!p.parse('ISNUMBER("5")'));  
+  equal(p.parse('ISNUMBER(A1)'),TRUE);
+  equal(p.parse('ISNUMBER(A2)'),TRUE);
+  equal(p.parse('ISNUMBER(A3)'),TRUE);
+  equal(p.parse('ISNUMBER(A4)'),FALSE);
+  equal(p.parse('ISNUMBER(5)'),TRUE);
+  equal(p.parse('ISNUMBER("5")'),FALSE);  
 })
 
 test( "SUM",function(){
@@ -191,7 +193,9 @@ test( "SUM",function(){
     A3:7,
     A4:8,
     A5:9,
-    A6:'"NaN"'
+    A6:'"NaN"',
+    A7:'TRUE',
+    A8:null
   });
   equal(p.parse('SUM(A1:A5)'),35);
   equal(p.parse('SUM(5+6,7,8,9)'),35);
@@ -200,7 +204,9 @@ test( "SUM",function(){
   equal(p.parse('SUM({5,6,7},8,9)'),35);
   equal(p.parse('SUM(TRUE,FALSE,TRUE)'),2);
   equal(p.parse('SUM(1,1/0)'),Parser.Error.DIVZERO);
-  equal(p.parse('SUM(A6,1)'),Parser.Error.VALUE);
+  equal(p.parse('SUM("NaN",1)'),Parser.Error.VALUE);
+  equal(p.parse('SUM(A6,A7,2)'),2);
+  equal(p.parse('SUM(A8)'),0);
 
 });
 
@@ -211,28 +217,26 @@ test("ISREF",function(){
     A3:0,
     A4:'"string"',
   });
-  ok(p.parse('ISREF(A1)'));
-  ok(p.parse('ISREF(A2)'));
-  ok(p.parse('ISREF(A3)'));
-  ok(p.parse('ISREF(A4)'));
-  ok(!p.parse('ISREF(5)'));
-  ok(!p.parse('ISREF("5")'));  
+  equal(p.parse('ISREF(A1)'),TRUE);
+  equal(p.parse('ISREF(A2)'),TRUE);
+  equal(p.parse('ISREF(A3)'),TRUE);
+  equal(p.parse('ISREF(A4)'),TRUE);
+  equal(p.parse('ISREF(5)'),FALSE);
+  equal(p.parse('ISREF("5")'),FALSE);  
 })
 
 test("ISERR",function(){
   var fn = Parser.fn;
   var err = Parser.Error;
-  var t = Parser.Bool.TRUE;
-  var f = Parser.Bool.FALSE;
 
-  equal(fn.ISERR(err.NULL),t);
-  equal(fn.ISERR(err.DIVZERO),t);
-  equal(fn.ISERR(err.VALUE),t);
-  equal(fn.ISERR(err.REF),t);
-  equal(fn.ISERR(err.NAME),t);
-  equal(fn.ISERR(err.NUM),t);
-  equal(fn.ISERR(1),f);
-  equal(fn.ISERR("ABC"),f);
+  equal(fn.ISERR(err.NULL),TRUE);
+  equal(fn.ISERR(err.DIVZERO),TRUE);
+  equal(fn.ISERR(err.VALUE),TRUE);
+  equal(fn.ISERR(err.REF),TRUE);
+  equal(fn.ISERR(err.NAME),TRUE);
+  equal(fn.ISERR(err.NUM),TRUE);
+  equal(fn.ISERR(1),FALSE);
+  equal(fn.ISERR("ABC"),FALSE);
   equal(fn.ISERR(err.NA),err.NA);
 })
 
@@ -240,16 +244,32 @@ test("ISERR",function(){
 test("ISERROR",function(){
   var fn = Parser.fn;
   var err = Parser.Error;
-  var t = Parser.Bool.TRUE;
-  var f = Parser.Bool.FALSE;
 
-  equal(fn.ISERROR(err.NULL),t);
-  equal(fn.ISERROR(err.DIVZERO),t);
-  equal(fn.ISERROR(err.VALUE),t);
-  equal(fn.ISERROR(err.REF),t);
-  equal(fn.ISERROR(err.NAME),t);
-  equal(fn.ISERROR(err.NUM),t);
-  equal(fn.ISERROR(1),f);
-  equal(fn.ISERROR("ABC"),f);
-  equal(fn.ISERROR(err.NA),t);
+  equal(fn.ISERROR(err.NULL),TRUE);
+  equal(fn.ISERROR(err.DIVZERO),TRUE);
+  equal(fn.ISERROR(err.VALUE),TRUE);
+  equal(fn.ISERROR(err.REF),TRUE);
+  equal(fn.ISERROR(err.NAME),TRUE);
+  equal(fn.ISERROR(err.NUM),TRUE);
+  equal(fn.ISERROR(1),FALSE);
+  equal(fn.ISERROR("ABC"),FALSE);
+  equal(fn.ISERROR(err.NA),TRUE);
+})
+
+test("AVERAGE",function(){
+  p.setData({
+    A1:8,
+    A2:7,
+    A3:9,
+    A4:6,
+    A5:10,
+    A6:null,
+  });
+  equal(p.parse('AVERAGE(A1:A5)'),8);
+  equal(p.parse('AVERAGE(8,7,9,6,10)'),8);
+  equal(p.parse('AVERAGE(A1,A2,A3,A4,A5)'),8);
+  equal(p.parse('AVERAGE(A1:A3,{6,10})'),8);
+  equal(p.parse('AVERAGE(TRUE,FALSE,TRUE)'),2/3);
+  equal(p.parse('AVERAGE("TEXT",1)'),Parser.Error.VALUE);
+  equal(p.parse('AVERAGE(A6,1)'),1);
 })

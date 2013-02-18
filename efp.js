@@ -274,7 +274,13 @@ var Parser = (function() {
 				var item = stack.shift();
 				switch(item.type) {
 				case type.BOOL:
-					valueStack.push(new window.Parser.Bool(item.val));
+					if(item.val === 'TRUE'){
+						valueStack.push(window.Parser.Bool.TRUE);
+					}else if(item.val === 'FALSE'){
+						valueStack.push(window.Parser.Bool.FALSE);
+					}else{
+						throw "Unexpeced value "+item.val;
+					}
 					break;
 				case type.NUM:
 					valueStack.push(fn.atoi(item.val));
@@ -521,11 +527,17 @@ var Parser = (function() {
 Parser.Ref = function(pos, value, p, pCtx) {
 	var p = p;
 	var pCtx = pCtx;
-	this.valueOf = function() {
-		if(!isNaN(this.value)) {
+	this.valueOf = function() {	
+		if(this.value == null){
+			return this.value;
+		}
+		if(this.isNumeric()) {
 			return this.value;
 		}
 		return p.call(pCtx, this.value);
+	};
+	this.isNumeric = function(){
+		return this.value != null && !isNaN(this.value);
 	};
 	this.setPosition = function(pos) {
 		var col = "";
@@ -637,7 +649,7 @@ Parser.fn = {
 	},
 	div: function(a, b) {
 		if (b === 0){
-			return window.Parser.Error.DIVZERO;
+			return Parser.Error.DIVZERO;
 		}
 		return a / b;
 	},
@@ -670,7 +682,7 @@ Parser.fn = {
 	},
 	list: function(a, b) {
 		if(Array.isArray(a) && Array.isArray(b)) {
-			Array.proto.push.apply(a, b);
+			a.push.apply(b);
 			return a;
 		} else if(Array.isArray(a)) {
 			a.push(b);
@@ -733,11 +745,32 @@ Parser.fn = {
 	"AVEDEV": function() {
 		throw "not implemented";
 	},
-	"AVERAGE": function() {
-		throw "not implemented";
+	"AVERAGE": function(a) {
+		var filteredVals = [];
+		while(a.length > 0){
+			var val = a.shift();
+			if(this.ISNUMBER(val).toBool()){
+				filteredVals.push(val);
+			}else if(this.ISREF(val).toBool()){
+				if(val.isNumeric()){
+					filteredVals.push(val);
+				}			
+			}else if(val != null && !isNaN(val)){
+				filteredVals.push(parseFloat(val));
+			}else{
+				return Parser.Error.VALUE;
+			}
+		}
+		return this.AVERAGEA(filteredVals);
 	},
-	"AVERAGEA": function() {
-		throw "not implemented";
+	"AVERAGEA": function(a) {
+		var sum,avg;
+		sum = this.SUM(a);
+		if(this.ISERROR(a).toBool()){
+			return a;
+		}
+		avg = this.div(sum,a.length);
+		return avg;
 	},
 	"BAHTTEXT": function() {
 		throw "not implemented";
@@ -1641,16 +1674,19 @@ Parser.fn = {
 	},
 	"SUM": function(a) {
 		var sum = 0;
-		for(var x = 0; x < a.length; x++) {
+		for(var x = 0; x < a.length; x++) {			
 			if(this.ISERROR(a[x]).toBool()){
 				return a[x];
 			}
-			if(!isNaN(a[x])) {
-				if(!Parser.fn.ISNUMBER(a[x])) {
-					sum += parseFloat(a[x]);
-				} else {
-					sum += a[x];
-				}
+
+			if(Parser.fn.ISNUMBER(a[x]).toBool()) {					
+				sum += a[x];
+			}else if (this.ISREF(a[x]).toBool()){
+				if(a[x].isNumeric()){
+					sum += parseFloat(a[x])	
+				}				
+			}else if (!isNaN(a[x])){
+				sum += parseFloat(a[x])
 			}else{
 				return Parser.Error.VALUE;
 			}
@@ -1847,10 +1883,16 @@ Parser.fn = {
 		throw "not implemented";
 	},
 	"ISNUMBER": function(v) {
-		return v != null && typeof(v.valueOf()) === "number";
+		if(v != null && typeof(v.valueOf()) === "number"){
+			return Parser.Bool.TRUE;	
+		}
+		return Parser.Bool.FALSE;	
 	},
 	"ISREF": function(v) {
-		return v instanceof Parser.Ref;
+		if(v instanceof Parser.Ref){
+			return Parser.Bool.TRUE;
+		}
+		return Parser.Bool.FALSE;	
 	},
 	"ISTEXT	": function() {
 		throw "not implemented";
