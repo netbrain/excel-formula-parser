@@ -23,17 +23,8 @@ var Parser = (function() {
 		FUNC: 19,
 		LEFTPAR: 20,
 		RIGHTPAR: 21,
+		BOOL: 22,
 	};
-
-	var error = {
-		NULL: "#NULL!",
-		DIVZERO: "#DIV/0!",
-		VALUE: "#VALUE!",
-		REF: "#REF!",
-		NAME: "#NAME?",
-		NUM: "#NUM!",
-		NA: "#N/A"
-	}
 
 	function Lex(input) {
 		var lexer = this;
@@ -51,68 +42,33 @@ var Parser = (function() {
 		};
 
 		this.lex = {
-			unknown: function() {
-				function fnArray(a) {
-					while(a.length > 0) {
-						var ret = fnCall(a.pop());
-						if(ret) {
-							return ret;
-						}
-					}
-					return lexer.lex.unknown;
-				}
-
-				function fnCall(fn) {
-					var pos = lexer.pos;
-					var ret = fn();
-					var hasLexed = pos !== lexer.pos;
-					if(hasLexed) {
-						if(ret) {
-							if(Array.isArray(ret)) {
-								return fnArray(ret);
-							}
-							return ret;
-						}
-						return lexer.lex.unknown;
-					}
-				}
-
-				for(var fn in lexer.lex) {
-					if(fn !== 'unknown') {
-						lexer.lex[fn].id = fn;
-						var ret = fnCall(lexer.lex[fn]);
-						if(ret) return ret;
-					}
-				}
-				throw "Unknown input " + lexer.next();
-			},
 			str: function() {
 				if(lexer.isNextConsume('"')) {
 					if(lexer.ignoreUntil('"')) {
 						lexer.emit(type.STR);
-						return [
-						lexer.lex.list, lexer.lex.gt, lexer.lex.eq, lexer.lex.lt, lexer.lex.concat, lexer.lex.missarg, lexer.lex.le, lexer.lex.ge, lexer.lex.ne];
 					} else {
 						throw "Error occured parsing string!"
 					}
 				}
 			},
+			bool:function(){
+				if(lexer.isNextConsume('TRUE') || lexer.isNextConsume('FALSE')) {
+					lexer.emit(type.BOOL);
+				}
+			},
 			ne: function() {
 				if(lexer.isNextConsume('<>')) {
 					lexer.emit(type.NE);
-					return [lexer.lex.ref, lexer.lex.num, lexer.lex.str];
 				}
 			},
 			ge: function() {
 				if(lexer.isNextConsume('>=')) {
 					lexer.emit(type.GE);
-					return [lexer.lex.ref, lexer.lex.num, lexer.lex.str];
 				}
 			},
 			le: function() {
 				if(lexer.isNextConsume('<=')) {
 					lexer.emit(type.LE);
-					return [lexer.lex.ref, lexer.lex.num, lexer.lex.str];
 				}
 			},
 			missarg: function() {
@@ -131,73 +87,61 @@ var Parser = (function() {
 			mul: function() {
 				if(lexer.isNextConsume('*')) {
 					lexer.emit(type.MUL);
-					return [lexer.lex.ref, lexer.lex.num];
 				}
 			},
 			div: function() {
 				if(lexer.isNextConsume('/')) {
 					lexer.emit(type.DIV);
-					return [lexer.lex.ref, lexer.lex.num];
 				}
 			},
 			sub: function() {
 				if(lexer.isNextConsume('-')) {
 					lexer.emit(type.SUB);
-					return [lexer.lex.ref, lexer.lex.num];
 				}
 			},
 			add: function() {
 				if(lexer.isNextConsume('+')) {
 					lexer.emit(type.ADD);
-					return [lexer.lex.ref, lexer.lex.num];
 				}
 			},
 			pow: function() {
 				if(lexer.isNextConsume('^')) {
 					lexer.emit(type.POW);
-					return [lexer.lex.ref, lexer.lex.num];
 				}
 			},
 			concat: function() {
 				if(lexer.isNextConsume('&')) {
 					lexer.emit(type.CONCAT);
-					return [lexer.lex.ref, lexer.lex.num, lexer.lex.str];
 				}
 			},
 			lt: function() {
 				if(lexer.isNextConsume('<')) {
 					lexer.emit(type.LT);
-					return [lexer.lex.ref, lexer.lex.num, lexer.lex.str];
 				}
 			},
 			eq: function() {
 				if(lexer.isNextConsume('=')) {
 					lexer.emit(type.EQ);
-					return [lexer.lex.ref, lexer.lex.num, lexer.lex.str];
 				}
 			},
 			gt: function() {
 				if(lexer.isNextConsume('>')) {
 					lexer.emit(type.GT);
-					return [lexer.lex.ref, lexer.lex.num, lexer.lex.str];
 				}
 			},
 			isect: function() {
 				if(lexer.isNextConsume(' ')) {
 					lexer.emit(type.ISECT);
-					return [lexer.lex.ref];
 				}
 			},
 			list: function() {
 				if(lexer.isNextConsume(',')) {
 					lexer.emit(type.LIST);
-					return [lexer.lex.ref, lexer.lex.num, lexer.lex.str];
 				}
 			},
 			range: function() {
 				if(lexer.isNextConsume(':')) {
 					lexer.emit(type.RANGE);
-					return [lexer.lex.ref];
 				}
 			},
 			leftPar: function() {
@@ -213,7 +157,6 @@ var Parser = (function() {
 			func: function() {
 				if(lexer.isNextFunc()) {
 					lexer.emit(type.FUNC);
-					//return lexer.lex.leftpar;
 				}
 			},
 			num: function() {
@@ -221,15 +164,11 @@ var Parser = (function() {
 					lexer.accept("0123456789");
 					lexer.accept(".0123456789");
 					lexer.emit(type.NUM);
-					return [
-					lexer.lex.list, lexer.lex.gt, lexer.lex.eq, lexer.lex.lt, lexer.lex.concat, lexer.lex.pow, lexer.lex.add, lexer.lex.sub, lexer.lex.div, lexer.lex.mul, lexer.lex.percent, lexer.lex.missarg, lexer.lex.le, lexer.lex.ge, lexer.lex.ne];
 				}
 			},
 			ref: function() {
 				if(lexer.accept("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")) {
 					lexer.emit(type.REF);
-					return [
-					lexer.lex.isect, lexer.lex.range, lexer.lex.list, lexer.lex.gt, lexer.lex.eq, lexer.lex.lt, lexer.lex.concat, lexer.lex.pow, lexer.lex.add, lexer.lex.sub, lexer.lex.div, lexer.lex.mul, lexer.lex.percent, lexer.lex.missarg, lexer.lex.le, lexer.lex.ge, lexer.lex.ne];
 				}
 			},
 		};
@@ -304,9 +243,18 @@ var Parser = (function() {
 		this.pos = 0;
 		this.tokens = [];
 
-		var stateFn = this.lex.unknown;
-		while(this.start < this.input.length && stateFn != null) {
-			stateFn = stateFn();
+		//TODO optimize lexer to have each
+		//lexing function return a possible
+		//next state, instead of returning to 
+		//the "unkown".
+		outer:
+		while(this.start < this.input.length) {
+			for(var fn in lexer.lex) {
+				var pos = this.pos;
+				lexer.lex[fn]();
+				if(this.pos !== pos) continue outer;
+			}
+			throw "Unknown input " + lexer.next();
 		}
 
 		return this.tokens
@@ -325,6 +273,9 @@ var Parser = (function() {
 			while(stack.length > 0) {
 				var item = stack.shift();
 				switch(item.type) {
+				case type.BOOL:
+					valueStack.push(new window.Parser.Bool(item.val));
+					break;
 				case type.NUM:
 					valueStack.push(fn.atoi(item.val));
 					break;
@@ -405,7 +356,7 @@ var Parser = (function() {
 						valueStack.push(ref);
 						break;
 					}
-					valueStack.push(error.NAME);
+					valueStack.push(window.Parser.Error.NAME);
 					break;
 				case type.FUNC:
 					evaluateFunction(item.val, valueStack);
@@ -430,6 +381,7 @@ var Parser = (function() {
 
 		function isOperand(token) {
 			switch(token.type) {
+		    case type.BOOL:
 			case type.NUM:
 			case type.STR:
 			case type.REF:
@@ -440,12 +392,12 @@ var Parser = (function() {
 		}
 
 		function hasHigherOrEqualPrecedence(a, b) {
-			var ap = getPresedence(a);
-			var bp = getPresedence(b);
+			var ap = getPrecedence(a);
+			var bp = getPrecedence(b);
 			return ap >= bp;
 		}
 
-		function getPresedence(token) {
+		function getPrecedence(token) {
 			switch(token.type) {
 			case type.LIST:
 			case type.LEFTPAR:
@@ -610,6 +562,44 @@ Parser.Ref.getColumnByIndex = function(i) {
 	}
 }
 
+Parser.Bool = function(val){
+	if(val === 'TRUE'){
+		this.b = 1;
+	}else if(val === 'FALSE'){
+		this.b = 0;
+	}
+
+	this.toString = function(){
+		return this.b ? 'TRUE' : 'FALSE';
+	}
+
+	this.valueOf = function(){
+		return this.b;
+	}
+
+	this.toBool = function(){
+		return !!this.b;
+	}
+}
+
+Parser.Bool.TRUE = new Parser.Bool('TRUE');
+Parser.Bool.FALSE = new Parser.Bool('FALSE');
+
+Parser.Error = function(err){
+	this.err = err;
+	this.toString = function(){
+		return this.err;
+	}
+}
+
+Parser.Error.NULL = new Parser.Error('#NULL');
+Parser.Error.DIVZERO = new Parser.Error('#DIV/0!');
+Parser.Error.VALUE = new Parser.Error('#VALUE!');
+Parser.Error.REF = new Parser.Error('#REF!');
+Parser.Error.NAME = new Parser.Error('#NAME?');
+Parser.Error.NUM = new Parser.Error('#NUM!');
+Parser.Error.NA = new Parser.Error('#N/A');
+
 Parser.fn = {
 	//INTERNAL CONVERSION FUNCTIONS
 	atoi: function(v) {
@@ -646,7 +636,9 @@ Parser.fn = {
 		return a * b;
 	},
 	div: function(a, b) {
-		//TODO add DIV/ZERO err
+		if (b === 0){
+			return window.Parser.Error.DIVZERO;
+		}
 		return a / b;
 	},
 	power: function(b, exp) {
@@ -1054,7 +1046,7 @@ Parser.fn = {
 		throw "not implemented";
 	},
 	"FALSE": function() {
-		throw "not implemented";
+		return Parser.Bool.FALSE;
 	},
 	"FDIST": function() {
 		throw "not implemented";
@@ -1650,12 +1642,17 @@ Parser.fn = {
 	"SUM": function(a) {
 		var sum = 0;
 		for(var x = 0; x < a.length; x++) {
+			if(this.ISERROR(a[x]).toBool()){
+				return a[x];
+			}
 			if(!isNaN(a[x])) {
 				if(!Parser.fn.ISNUMBER(a[x])) {
 					sum += parseFloat(a[x]);
 				} else {
 					sum += a[x];
 				}
+			}else{
+				return Parser.Error.VALUE;
 			}
 		}
 		return sum;
@@ -1742,7 +1739,7 @@ Parser.fn = {
 		throw "not implemented";
 	},
 	"TRUE": function() {
-		throw "not implemented";
+		return Parser.Bool.TRUE;
 	},
 	"TRUNC": function() {
 		throw "not implemented";
@@ -1828,11 +1825,17 @@ Parser.fn = {
 	"ISBLANK": function() {
 		throw "not implemented";
 	},
-	"ISERR": function() {
-		throw "not implemented";
+	"ISERR": function(v) {
+		if(v === Parser.Error.NA){
+			return v;
+		}
+		return this.ISERROR(v);
 	},
-	"ISERROR": function() {
-		throw "not implemented";
+	"ISERROR": function(v) {
+		if(v instanceof Parser.Error){
+			return Parser.Bool.TRUE;
+		}
+		return Parser.Bool.FALSE;		
 	},
 	"ISLOGICAL": function() {
 		throw "not implemented";
@@ -1847,7 +1850,7 @@ Parser.fn = {
 		return v != null && typeof(v.valueOf()) === "number";
 	},
 	"ISREF": function(v) {
-		return v instanceof window.Parser.Ref;
+		return v instanceof Parser.Ref;
 	},
 	"ISTEXT	": function() {
 		throw "not implemented";

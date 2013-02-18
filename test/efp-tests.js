@@ -46,6 +46,7 @@ test( "lex tDiv", function() {
   equal(p.parse("3/2"), 1.5);
   equal(p.parse("3/2+1"), 2.5);
   equal(p.parse("1+3/2"), 2.5);
+  equal(p.parse("1/0"), "#DIV/0!");
 });
 
 test( "lex tPower", function() {
@@ -107,6 +108,7 @@ test( "lex tRef", function() {
   equal(p.parse('C1'), "STRING");  
   equal(p.parse('D1'), 3);  
   equal(p.parse('E1'), 3);  
+  equal(p.parse('E3'), "#NAME?");  
 });
 
 
@@ -152,14 +154,19 @@ test( "lex tFunc", function() {
 });
 
 test( "lex tMissingArg", function() {
-  equal(p.parse('SUM(1,,2)'),3);
-  equal(p.parse('SUM(1,,,2)'),3);
+  deepEqual(p.parse('1,,2'),[1,undefined,2]);
+  deepEqual(p.parse('1,,,2'),[1,undefined,undefined,2]);
 });
 
 test( "lex tArray", function() {
-  equal(p.parse('SUM({1,2})'),3);
-  equal(p.parse('SUM({1,2,3})'),6);
-  equal(p.parse('SUM({1,,3})'),4);
+  deepEqual(p.parse('{1,2}'),[1,2]);
+  deepEqual(p.parse('{1,2,3}'),[1,2,3]);
+  deepEqual(p.parse('{1,,3}'),[1,undefined,3]);
+});
+
+test( "lex tBool", function() {
+  equal(p.parse('TRUE'),true);
+  equal(p.parse('FALSE'),false);
 });
 
 test("ISNUMBER",function(){
@@ -183,13 +190,18 @@ test( "SUM",function(){
     A2:6,
     A3:7,
     A4:8,
-    A5:9
+    A5:9,
+    A6:'"NaN"'
   });
   equal(p.parse('SUM(A1:A5)'),35);
   equal(p.parse('SUM(5+6,7,8,9)'),35);
   equal(p.parse('SUM(A1:A3,8,9)'),35);
   equal(p.parse('SUM(A1,A2,A3,"8","9")'),35);
   equal(p.parse('SUM({5,6,7},8,9)'),35);
+  equal(p.parse('SUM(TRUE,FALSE,TRUE)'),2);
+  equal(p.parse('SUM(1,1/0)'),Parser.Error.DIVZERO);
+  equal(p.parse('SUM(A6,1)'),Parser.Error.VALUE);
+
 });
 
 test("ISREF",function(){
@@ -205,4 +217,39 @@ test("ISREF",function(){
   ok(p.parse('ISREF(A4)'));
   ok(!p.parse('ISREF(5)'));
   ok(!p.parse('ISREF("5")'));  
+})
+
+test("ISERR",function(){
+  var fn = Parser.fn;
+  var err = Parser.Error;
+  var t = Parser.Bool.TRUE;
+  var f = Parser.Bool.FALSE;
+
+  equal(fn.ISERR(err.NULL),t);
+  equal(fn.ISERR(err.DIVZERO),t);
+  equal(fn.ISERR(err.VALUE),t);
+  equal(fn.ISERR(err.REF),t);
+  equal(fn.ISERR(err.NAME),t);
+  equal(fn.ISERR(err.NUM),t);
+  equal(fn.ISERR(1),f);
+  equal(fn.ISERR("ABC"),f);
+  equal(fn.ISERR(err.NA),err.NA);
+})
+
+
+test("ISERROR",function(){
+  var fn = Parser.fn;
+  var err = Parser.Error;
+  var t = Parser.Bool.TRUE;
+  var f = Parser.Bool.FALSE;
+
+  equal(fn.ISERROR(err.NULL),t);
+  equal(fn.ISERROR(err.DIVZERO),t);
+  equal(fn.ISERROR(err.VALUE),t);
+  equal(fn.ISERROR(err.REF),t);
+  equal(fn.ISERROR(err.NAME),t);
+  equal(fn.ISERROR(err.NUM),t);
+  equal(fn.ISERROR(1),f);
+  equal(fn.ISERROR("ABC"),f);
+  equal(fn.ISERROR(err.NA),t);
 })
