@@ -352,7 +352,8 @@ var Parser = (function() {
 							}
 						}
 					}
-					valueStack.push([range]	);
+					range.isRangeArray = true;
+					valueStack.push([range]);
 					break;
 				case type.REF:
 					if(data != null && item.val in data) {
@@ -723,6 +724,15 @@ Parser.fn = {
 	isError: function(v){
 		return v instanceof Parser.Error;
 	},
+	isNumber: function(v){
+		if(v != null){
+			if (typeof(v) === "number") return true;
+			if (typeof(v) === "object" && typeof(v.valueOf()) === "number"){
+				return true;
+			}
+		}
+		return false;
+	},
 	contains: function(str,s){
 		return str.indexOf(s) !== -1;
 	},
@@ -792,9 +802,9 @@ Parser.fn = {
 		var filteredVals = [];
 		while(a.length > 0){
 			var val = a.shift();
-			if(this.ISNUMBER(val).toBool() || Array.isArray(val)){
+			if(this.isNumber(val) || Array.isArray(val)){
 				filteredVals.push(val);
-			}else if(this.ISREF(val).toBool()){
+			}else if(this.isRef(val)){
 				if(val.isNumeric()){
 					filteredVals.push(val);
 				}
@@ -811,7 +821,7 @@ Parser.fn = {
 		var sum,avg,length;
 		length = 0;
 		sum = this.SUM.apply(this,a);
-		if(this.ISERROR(a).toBool()){
+		if(this.isError(a)){
 			return a;
 		}
 
@@ -1784,13 +1794,13 @@ Parser.fn = {
 		var a = Array.prototype.slice.call(arguments);
 		var sum = 0;
 		for(var x = 0; x < a.length; x++) {			
-			if(this.ISERROR(a[x]).toBool()){
+			if(this.isError(a[x])){
 				return a[x];
 			}
 
-			if(Parser.fn.ISNUMBER(a[x]).toBool()) {					
+			if(this.isNumber(a[x])) {					
 				sum += a[x];
-			}else if (this.ISREF(a[x]).toBool()){
+			}else if (this.isRef(a[x])){
 				if(a[x].isNumeric()){
 					sum += parseFloat(a[x]);
 				}			
@@ -1997,7 +2007,7 @@ Parser.fn = {
 		throw "not implemented";
 	},
 	"ISNUMBER": function(value) {
-		if(value != null && typeof(value.valueOf()) === "number"){
+		if(this.isNumber(value)){
 			return Parser.Bool.TRUE;	
 		}
 		return Parser.Bool.FALSE;	

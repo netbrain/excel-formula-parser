@@ -105,12 +105,12 @@ test( "lex tRef", function() {
     D1:'SUM(1,2)',
     E1:'SUM(A1,B1)',
   });
-  //equal(p.parse('A1').valueOf(), 1);
-  //equal(p.parse('B1').valueOf(), 2);  
-  //equal(p.parse('C1').valueOf(), "STRING");  
+  equal(p.parse('A1').valueOf(), 1);
+  equal(p.parse('B1').valueOf(), 2);  
+  equal(p.parse('C1').valueOf(), "STRING");  
   equal(p.parse('D1').valueOf(), 3);  
-  // equal(p.parse('E1').valueOf(), 3);  
-  // equal(p.parse('E3').valueOf(), "#NAME?");  
+  equal(p.parse('E1').valueOf(), 3);  
+  equal(p.parse('E3').valueOf(), "#NAME?");  
 });
 
 
@@ -122,13 +122,14 @@ test( "lex tRange", function() {
   var result = p.parse('A1:A2');
   var range = result[0];
   ok(Array.isArray(range));
+  ok(range.isRangeArray);
   ok(range.length === 2);
 
   for (var x = 0; x < range.length; x++){
       range[x] = range[x].valueOf();
   }
-
   deepEqual( range, [1,2]);
+
 
 });
 
