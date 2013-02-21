@@ -335,8 +335,8 @@ var Parser = (function() {
 					break;
 				case type.RANGE:
 					var range = [];
-					var a = valueStack.shift();
-					var b = valueStack.shift();
+					var b = valueStack.pop();
+					var a = valueStack.pop();
 					var mincol = Math.min(a.columnIndex, b.columnIndex);
 					var maxcol = Math.max(a.columnIndex, b.columnIndex);
 					var minrow = Math.min(a.row, b.row);
@@ -352,7 +352,7 @@ var Parser = (function() {
 							}
 						}
 					}
-					valueStack.push(range);
+					valueStack.push([range]	);
 					break;
 				case type.REF:
 					if(data != null && item.val in data) {
@@ -419,6 +419,7 @@ var Parser = (function() {
 			case type.RANGE:
 			case type.ISECT:
 			case type.FUNC:
+			case type.CONCAT:
 				return 3;
 			default:
 				throw "Unknown presedence type! " + JSON.stringify(token);
@@ -507,8 +508,14 @@ var Parser = (function() {
 		function evaluateFunction(fnName, stack) {
 			var fn = window.Parser.fn;
 			if(fnName in fn) {
-				var args = stack.splice(-fn[fnName].length);
-				var result = fn[fnName].apply(fn, args);
+				var args = stack.pop();
+				var result;
+				if(Array.isArray(args)){
+					result = fn[fnName].apply(fn, args);
+				}else{
+					//only one argument
+					result = fn[fnName].call(fn, args);
+				}
 				stack.push(result);
 			} else {
 				throw "Unknown function " + fnName;
@@ -520,7 +527,10 @@ var Parser = (function() {
 	return {
 		newInstance: function(data) {
 			return new Parser(data);
-		}
+		},
+		parse:function(input){
+			return new Parser().parse(input);
+		},
 	};
 })();
 
@@ -529,12 +539,16 @@ Parser.Ref = function(pos, value, p, pCtx) {
 	var pCtx = pCtx;
 	this.valueOf = function() {	
 		if(this.value == null){
-			return this.value;
+			return null;
 		}
 		if(this.isNumeric()) {
 			return this.value;
 		}
-		return p.call(pCtx, this.value);
+		var value = p.call(pCtx, this.value);
+		if(typeof(value) === "object"){
+			return value.valueOf();
+		}
+		return value;
 	};
 	this.isNumeric = function(){
 		return this.value != null && !isNaN(this.value);
@@ -559,7 +573,10 @@ Parser.Ref = function(pos, value, p, pCtx) {
 		this.row = parseInt(row);
 		this.position = pos;
 		this.columnIndex = colIndex;
-	}
+	};
+	this.toString = function(){
+		return new String(this.valueOf());
+	};
 	this.setPosition(pos)
 	this.value = value;
 }
@@ -693,6 +710,31 @@ Parser.fn = {
 		}
 		return [a, b];
 	},
+	//INTRNAL HELPER FUNCTIONS
+	startsWith: function(str,s){
+		return str.indexOf(s) === 0;
+	},
+	isRef: function(v){
+		return v instanceof Parser.Ref;
+	},
+	isBool: function(v){
+		return v instanceof Parser.Bool;
+	},
+	isError: function(v){
+		return v instanceof Parser.Error;
+	},
+	contains: function(str,s){
+		return str.indexOf(s) !== -1;
+	},
+	getNumberOrString: function(str){
+		if(!isNaN(str)){
+			return parseFloat(str);
+		}
+		return str;
+	},
+	escapeRegexSpecials: function(str){
+		return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+	},
 	//EXCEL FUNCTIONS
 	"ABS": function() {
 		throw "not implemented";
@@ -745,31 +787,42 @@ Parser.fn = {
 	"AVEDEV": function() {
 		throw "not implemented";
 	},
-	"AVERAGE": function(a) {
+	"AVERAGE": function() {
+		var a = Array.prototype.slice.call(arguments);
 		var filteredVals = [];
 		while(a.length > 0){
 			var val = a.shift();
-			if(this.ISNUMBER(val).toBool()){
+			if(this.ISNUMBER(val).toBool() || Array.isArray(val)){
 				filteredVals.push(val);
 			}else if(this.ISREF(val).toBool()){
 				if(val.isNumeric()){
 					filteredVals.push(val);
-				}			
+				}
 			}else if(val != null && !isNaN(val)){
 				filteredVals.push(parseFloat(val));
 			}else{
 				return Parser.Error.VALUE;
 			}
 		}
-		return this.AVERAGEA(filteredVals);
+		return this.AVERAGEA.apply(this,filteredVals);
 	},
-	"AVERAGEA": function(a) {
-		var sum,avg;
-		sum = this.SUM(a);
+	"AVERAGEA": function() {
+		var a = Array.prototype.slice.call(arguments);
+		var sum,avg,length;
+		length = 0;
+		sum = this.SUM.apply(this,a);
 		if(this.ISERROR(a).toBool()){
 			return a;
 		}
-		avg = this.div(sum,a.length);
+
+		for(var x = 0; x < a.length; x++){
+			if(Array.isArray(a[x])){
+				length += a[x].length;
+			}else{
+				length++;
+			}
+		}
+		avg = this.div(sum,length);
 		return avg;
 	},
 	"BAHTTEXT": function() {
@@ -898,8 +951,63 @@ Parser.fn = {
 	"COUNTBLANK": function() {
 		throw "not implemented";
 	},
-	"COUNTIF": function() {
-		throw "not implemented";
+	"COUNTIF": function(range,criteria) {
+		var count = 0;
+		for(var x = 0; x < range.length; x++){
+			var cell = range[x];
+			if(this.isRef(criteria) || this.isBool(criteria)){
+				criteria = criteria.valueOf();
+			}
+
+			if(this.isRef(cell)){
+				cell = cell.valueOf();
+			}
+
+			if(typeof(criteria) === "string"){
+				var containsWildcards = false;
+				if(this.contains(criteria,'*')){
+					containsWildcards = true;
+					criteria = criteria.split('~*')
+					for(var i = 0; i < criteria.length; i++){
+						criteria[i] = criteria[i].replace(/\*/g,'.*');	
+					}
+					criteria = criteria.join(this.escapeRegexSpecials('*'));					
+				}
+
+				if(this.contains(criteria,'?')){
+					containsWildcards = true;
+					criteria = criteria.split('~?')
+					for(var i = 0; i < criteria.length; i++){
+						criteria[i] = criteria[i].replace(/\?/g,'.');	
+					}
+					criteria = criteria.join(this.escapeRegexSpecials('?'));
+				}
+
+				if(containsWildcards){
+					criteria = new RegExp('^'+criteria+'$');
+				}
+			}
+
+			if(cell == criteria){
+				count++;
+			}else if(typeof(criteria) === "string"){
+				if(this.startsWith(criteria,'<>')){
+					if(cell != this.getNumberOrString(criteria.substring(2))) count++;
+				}else if(this.startsWith(criteria,'>=')){
+					if(cell >= this.getNumberOrString(criteria.substring(2))) count++;
+				}else if(this.startsWith(criteria,'<=')){
+					if(cell <= this.getNumberOrString(criteria.substring(2))) count++;			
+				}else if(this.startsWith(criteria,'>')){
+					if(cell > this.getNumberOrString(criteria.substring(1))) count++;
+				}else if(this.startsWith(criteria,'<')){
+					if(cell < this.getNumberOrString(criteria.substring(1))) count++;
+				}
+			
+			}else if(criteria instanceof RegExp){
+				if(criteria.test(cell)) count++;
+			}
+		}
+		return count;
 	},
 	"COUPDAYBS": function() {
 		throw "not implemented";
@@ -1672,7 +1780,8 @@ Parser.fn = {
 	"SUBTOTAL": function() {
 		throw "not implemented";
 	},
-	"SUM": function(a) {
+	"SUM": function() {
+		var a = Array.prototype.slice.call(arguments);
 		var sum = 0;
 		for(var x = 0; x < a.length; x++) {			
 			if(this.ISERROR(a[x]).toBool()){
@@ -1683,10 +1792,12 @@ Parser.fn = {
 				sum += a[x];
 			}else if (this.ISREF(a[x]).toBool()){
 				if(a[x].isNumeric()){
-					sum += parseFloat(a[x])	
-				}				
+					sum += parseFloat(a[x]);
+				}			
+			}else if(Array.isArray(a[x])){
+				sum += this.SUM.apply(this,a[x]);
 			}else if (!isNaN(a[x])){
-				sum += parseFloat(a[x])
+				sum += parseFloat(a[x]);
 			}else{
 				return Parser.Error.VALUE;
 			}
@@ -1868,13 +1979,16 @@ Parser.fn = {
 		return this.ISERROR(v);
 	},
 	"ISERROR": function(v) {
-		if(v instanceof Parser.Error){
+		if(this.isError(v)){
 			return Parser.Bool.TRUE;
 		}
 		return Parser.Bool.FALSE;		
 	},
 	"ISLOGICAL": function() {
-		throw "not implemented";
+		if(this.isBool(v)){
+			return Parser.Bool.TRUE;
+		}
+		return Parser.Bool.FALSE;	
 	},
 	"ISNA": function() {
 		throw "not implemented";
@@ -1882,14 +1996,14 @@ Parser.fn = {
 	"ISNONTEXT": function() {
 		throw "not implemented";
 	},
-	"ISNUMBER": function(v) {
-		if(v != null && typeof(v.valueOf()) === "number"){
+	"ISNUMBER": function(value) {
+		if(value != null && typeof(value.valueOf()) === "number"){
 			return Parser.Bool.TRUE;	
 		}
 		return Parser.Bool.FALSE;	
 	},
 	"ISREF": function(v) {
-		if(v instanceof Parser.Ref){
+		if(this.isRef(v)){
 			return Parser.Bool.TRUE;
 		}
 		return Parser.Bool.FALSE;	
