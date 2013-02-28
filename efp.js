@@ -440,6 +440,7 @@ var Parser = (function() {
 			case type.NUM:
 			case type.STR:
 			case type.REF:
+			case type.PERCENT:
 				return true;
 			default:
 				return false;
@@ -1687,8 +1688,27 @@ Parser.fn = {
 	"PEARSON": function() {
 		throw "not implemented";
 	},
-	"PERCENTILE": function() {
-		throw "not implemented";
+	"PERCENTILE": function(array,P) {
+
+		if(this.isRange(array)){
+			var a = array;
+			array = [];
+			for(var x = 0; x < a.length; x++){
+				array[x] = a[x].valueOf();
+			}
+		}
+		array.sort();
+		var N = array.length;
+		var n = (N - 1) * P + 1;		
+		if (k === 1){
+			return array[0];
+		}else if(k === N){
+			return array[N-1];
+		}else{
+			var k = Math.floor(n);
+			var d = n % 1;
+			return array[k-1]+d*(array[k]-array[k-1]);
+		}
 	},
 	"PERCENTILE.INC": function() {
 		throw "not implemented";

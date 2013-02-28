@@ -333,3 +333,20 @@ test("COUNT",function(){
   equal(p.parse('COUNT(1,40209,TRUE,"1","40209","Text",1/0)'),5);
 
 })
+
+
+test("PERCENTILE",function(){
+  p.setData({
+    A1:2,
+    A2:1,
+    A3:6,
+    A4:4,
+    A5:3,
+    A6:5,
+  });
+
+  equal(p.parse('PERCENTILE(A1:A6,0.2)'),2);
+  equal(p.parse('PERCENTILE(A1:A6,60%)'),4);
+  equal(p.parse('PERCENTILE(A1:A6,50%)'),3.5);
+
+})
