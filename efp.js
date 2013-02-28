@@ -316,7 +316,8 @@ var Parser = (function() {
 					valueStack.push(fn.atoi(item.val));
 					break;
 				case type.STR:
-					valueStack.push(item.val.slice(1, item.val.length - 1));
+					var str = item.val.slice(1, item.val.length - 1);
+					valueStack.push(new window.Parser.String(str));
 					break;
 				case type.PERCENT:
 					valueStack.push(fn.percent(valueStack.pop()));
@@ -560,21 +561,41 @@ Parser.Ref = function(pos, value, p, pCtx) {
 	var p = p;
 	var pCtx = pCtx;
 	this.valueOf = function() {	
-		if(this.value == null){
-			return null;
-		}
-		if(this.isNumeric()) {
-			return this.value;
-		}
-		var value = p.call(pCtx, this.value);
-		if(typeof(value) === "object"){
-			return value.valueOf();
+		var value = this.referenceValue();
+		if(value != null && typeof(value) === "object"){
+			value = value.valueOf();
 		}
 		return value;
 	};
-	this.isNumeric = function(){
-		return this.value != null && !isNaN(this.value);
+
+	this.isNumeric = function(){		
+		var v = this.valueOf();
+		if(v == null) return false;
+		if(Parser.fn.isString(v)){
+			return v.isNumeric();
+		}else{
+			return !isNaN(v);
+		}
 	};
+
+	this.isNumber = function(){		
+		if (typeof(this.referenceValue()) === "number"){
+			return true;
+		}
+
+		return false;
+	};
+
+	this.referenceValue = function(){
+		if(this.value == null){
+			return null;
+		}
+		if(typeof(this.value) === "number") {
+			return this.value;
+		}
+		return p.call(pCtx, this.value);
+	}
+
 	this.setPosition = function(pos) {
 		var col = "";
 		var colIndex = -1;
@@ -613,23 +634,41 @@ Parser.Ref.getColumnByIndex = function(i) {
 	}
 }
 
-Parser.Bool = function(val){
-	if(val === 'TRUE'){
-		this.b = 1;
-	}else if(val === 'FALSE'){
-		this.b = 0;
+Parser.String = function(str){
+
+	this.toString = function(){
+		return str;
+	};
+
+	this.valueOf = function(){
+		return str;
+	};
+
+	this.isNumeric = function(){
+		return str != null && !isNaN(str);
+	};
+
+}
+
+Parser.Bool = function(b){
+	if(b === 'TRUE'){
+		b = 1;
+	}else if(b === 'FALSE'){
+		b = 0;
+	}else{
+		throw "Illegal argument, should be one of TRUE or FALSE"
 	}
 
 	this.toString = function(){
-		return this.b ? 'TRUE' : 'FALSE';
+		return b ? 'TRUE' : 'FALSE';
 	}
 
 	this.valueOf = function(){
-		return this.b;
+		return b;
 	}
 
 	this.toBool = function(){
-		return !!this.b;
+		return !!b;
 	}
 }
 
@@ -736,6 +775,9 @@ Parser.fn = {
 	startsWith: function(str,s){
 		return str.indexOf(s) === 0;
 	},
+	isString: function(v){
+		return v instanceof Parser.String;	
+	},
 	isRef: function(v){
 		return v instanceof Parser.Ref;
 	},
@@ -746,12 +788,20 @@ Parser.fn = {
 		return v instanceof Parser.Error;
 	},
 	isNumber: function(v){
-		if(v != null){
-			if (typeof(v) === "number") return true;
-			if (typeof(v) === "object" && typeof(v.valueOf()) === "number"){
-				return true;
-			}
+		if(v == null) return false;
+		if(this.isString(v)) return false;
+		if(this.isBool(v)) return false;
+		if(this.isError(v)) return false;		
+
+		if(this.isRef(v)){
+			return v.isNumber();
 		}
+
+		if (typeof(v) === "number") return true;		
+		if (typeof(v) === "object" && typeof(v.valueOf()) === "number"){
+			return true;
+		}
+		
 		return false;
 	},
 	isArray: function(v){
@@ -832,7 +882,7 @@ Parser.fn = {
 		var filteredVals = [];
 		while(a.length > 0){
 			var val = a.shift();
-			if(this.isNumber(val) || Array.isArray(val)){
+			if(this.isNumber(val) || this.isBool(val) || Array.isArray(val)){
 				filteredVals.push(val);
 			}else if(this.isRef(val)){
 				if(val.isNumeric()){
@@ -983,7 +1033,23 @@ Parser.fn = {
 		throw "not implemented";
 	},
 	"COUNT": function() {
-		throw "not implemented";
+		var a = Array.prototype.slice.call(arguments);
+		var count = 0;	
+		for(var x = 0; x < a.length; x++) {				
+			var v = a[x];
+			if(this.isRange(v)){
+				for(var i = 0; i < v.length; i++){
+					if(this.isNumber(v[i])){
+						count++;
+					}
+				}
+			}else if(this.isNumber(v) || this.isBool(v)){
+				count++;
+			}else if(this.isString(v) && v.isNumeric()){
+				count++;
+			}
+		}
+		return count;
 	},
 	"COUNTA": function() {
 		throw "not implemented";
@@ -995,7 +1061,9 @@ Parser.fn = {
 		var count = 0;
 		for(var x = 0; x < range.length; x++){
 			var cell = range[x];
-			if(this.isRef(criteria) || this.isBool(criteria)){
+			if(this.isRef(criteria) || 
+				this.isBool(criteria) || 
+				this.isString(criteria)){
 				criteria = criteria.valueOf();
 			}
 
@@ -1828,7 +1896,7 @@ Parser.fn = {
 				return a[x];
 			}
 
-			if(this.isNumber(a[x])) {					
+			if(this.isNumber(a[x]) || this.isBool(a[x])) {					
 				sum += a[x];
 			}else if (this.isRef(a[x])){
 				if(a[x].isNumeric()){
@@ -2048,7 +2116,10 @@ Parser.fn = {
 		}
 		return Parser.Bool.FALSE;	
 	},
-	"ISTEXT	": function() {
-		throw "not implemented";
+	"ISTEXT	": function(v) {
+		if(this.isString(v)){
+			return Parser.Bool.TRUE;
+		}
+		return Parser.Bool.FALSE;	
 	},
 }

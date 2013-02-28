@@ -317,3 +317,19 @@ test("COUNTIF",function(){
   equal(p.parse('COUNTIF(C2:C4,"<>ABC")'),2);
 
 })
+
+test("COUNT",function(){
+  p.setData({
+    A1:1,
+    A2:40209, //date 31 january 2012
+    A3:'TRUE',
+    A4:'"1"',
+    A5:'"Text"',
+    A6:'SUM(1/0)', //error
+    A7:'A1+A2'
+  });
+
+  equal(p.parse('COUNT(A1:A7)'),3);
+  equal(p.parse('COUNT(1,40209,TRUE,"1","40209","Text",1/0)'),5);
+
+})
