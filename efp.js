@@ -145,21 +145,13 @@ var Parser = (function() {
 				}
 			},
 			par: function() {
-				if(lexer.isNextConsume('(')) {
-					if(lexer.ignoreUntil(')')) {
-						lexer.emit(type.PAR);
-					} else {
-						throw "Error occured parsing parenthesis group, missing ')' ?"
-					}
+				if(lexer.isNextPar()) {
+					lexer.emit(type.PAR);
 				}
 			},
 			arr: function() {
-				if(lexer.isNextConsume('{')) {
-					if(lexer.ignoreUntil('}')) {
-						lexer.emit(type.ARR);
-					} else {
-						throw "Error occured parsing array group, missing '}' ?"
-					}
+				if(lexer.isNextArr()) {
+					lexer.emit(type.ARR);
 				}
 			},			
 			func: function() {
@@ -211,12 +203,38 @@ var Parser = (function() {
 
 		this.isNextFunc = function() {
 			var pos = this.pos;
-			if(this.accept("ABCDEFGHIJKLMNOPQRSTUVWXYZ") && this.peek() === '(') {
+			if(this.accept("ABCDEFGHIJKLMNOPQRSTUVWXYZ") && this.isNextPar()) {
 				return true;
 			}
 			this.pos = pos;
 			return false;
 		};
+
+		this.isNextPar = function(){
+			return this._isNextGroup('(',')');
+		};
+
+		this.isNextArr = function(){
+			return this._isNextGroup('{','}');
+		};
+
+		//helper function to stay dry
+		this._isNextGroup = function(startChar,endChar){
+			if(lexer.isNextConsume(startChar)) {
+				var b = 1;
+				while(!lexer.isAtEndOfLine()){
+					var n = lexer.next();					
+					if(n === startChar){
+						b++;
+					}else if(n === endChar){
+						b--;
+					}
+
+					if(b === 0) break;
+				}
+			}
+			return b === 0;
+		}
 
 		this.accept = function(str) {
 			var accepted = false;
@@ -246,6 +264,10 @@ var Parser = (function() {
 			this.start = this.pos;
 		};
 
+		this.isAtEndOfLine = function(){
+			return this.start >= this.input.length
+		};
+
 		this.input = input;
 		this.start = 0;
 		this.pos = 0;
@@ -256,7 +278,7 @@ var Parser = (function() {
 		//next state, instead of returning to 
 		//the "unkown".
 		outer:
-		while(this.start < this.input.length) {
+		while(!this.isAtEndOfLine()) {
 			for(var fn in lexer.lex) {
 				var pos = this.pos;
 				lexer.lex[fn]();
@@ -382,7 +404,16 @@ var Parser = (function() {
 					valueStack.push(window.Parser.Error.NAME);
 					break;
 				case type.FUNC:
-					evaluateFunction(item.val, valueStack);
+					var argIndex = item.val.indexOf('(');
+					var functionName = item.val.substring(0,argIndex);
+					var args = item.val.substring(argIndex);
+					var argList = this.parse(args);
+					if (!Array.isArray(argList)){
+						argList = [argList];	
+					}					
+					argList.isArgList = true;
+					valueStack.push(argList);
+					evaluateFunction(functionName, valueStack);
 					break;
 				default:
 					throw 'Unknown type' + JSON.stringify(item);
@@ -506,13 +537,7 @@ var Parser = (function() {
 			var fn = window.Parser.fn;
 			if(fnName in fn) {
 				var args = stack.pop();
-				var result;
-				if(Array.isArray(args)){
-					result = fn[fnName].apply(fn, args);
-				}else{
-					//only one argument
-					result = fn[fnName].call(fn, args);
-				}
+				var result = fn[fnName].apply(fn, args);
 				stack.push(result);
 			} else {
 				throw "Unknown function " + fnName;
@@ -695,34 +720,17 @@ Parser.fn = {
 		return a + " " + b;
 	},
 	list: function(a, b) {
-		if(this.isArgList(a) && this.isArgList(b)) {
+		if(Array.isArray(a) && Array.isArray(b)) {
 			a.push.apply(b);
 			return a;
-		} else if(this.isArgList(a)) {
+		} else if(Array.isArray(a)) {
 			a.push(b);
 			return a;
-		} else if(this.isArgList(b)) {
+		} else if(Array.isArray(b)) {
 			b.unshift(a);
 			return b;
 		}
-		var argList = [a, b];
-		argList.isArgList = true;
-		return argList;
-	},
-	array: function(a, b) {
-		if(this.isArray(a) && this.isArray(b)) {
-			a.push.apply(b);
-			return a;
-		} else if(this.isArray(a)) {
-			a.push(b);
-			return a;
-		} else if(this.isArray(b)) {
-			b.unshift(a);
-			return b;
-		}
-		var array = [a, b];
-		array.isArray = true;
-		return array;
+		return [a,b];
 	},
 	//INTRNAL HELPER FUNCTIONS
 	startsWith: function(str,s){
