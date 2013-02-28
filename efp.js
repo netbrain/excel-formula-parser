@@ -21,9 +21,9 @@ var Parser = (function() {
 		RANGE: 17,
 		REF: 18,
 		FUNC: 19,
-		LEFTPAR: 20,
-		RIGHTPAR: 21,
 		BOOL: 22,
+		PAR:25,
+		ARR:26,
 	};
 
 	function Lex(input) {
@@ -144,16 +144,24 @@ var Parser = (function() {
 					lexer.emit(type.RANGE);
 				}
 			},
-			leftPar: function() {
-				if(lexer.isNextConsume('(') || lexer.isNextConsume('{')) {
-					lexer.emit(type.LEFTPAR);
+			par: function() {
+				if(lexer.isNextConsume('(')) {
+					if(lexer.ignoreUntil(')')) {
+						lexer.emit(type.PAR);
+					} else {
+						throw "Error occured parsing parenthesis group, missing ')' ?"
+					}
 				}
 			},
-			rightPar: function() {
-				if(lexer.isNextConsume(')') || lexer.isNextConsume('}')) {
-					lexer.emit(type.RIGHTPAR);
+			arr: function() {
+				if(lexer.isNextConsume('{')) {
+					if(lexer.ignoreUntil('}')) {
+						lexer.emit(type.ARR);
+					} else {
+						throw "Error occured parsing array group, missing '}' ?"
+					}
 				}
-			},
+			},			
 			func: function() {
 				if(lexer.isNextFunc()) {
 					lexer.emit(type.FUNC);
@@ -333,8 +341,17 @@ var Parser = (function() {
 				case type.LIST:
 					evaluateOperator(fn.list, valueStack);
 					break;
+				case type.PAR:
+					valueStack.push(this.parse(item.val.slice(1, item.val.length - 1)));
+					break;
+				case type.ARR:
+					var arr = this.parse(item.val.slice(1, item.val.length - 1));
+					arr.isArray = true;
+					valueStack.push(arr);
+					break;
 				case type.RANGE:
 					var range = [];
+					range.isRange = true;
 					var b = valueStack.pop();
 					var a = valueStack.pop();
 					var mincol = Math.min(a.columnIndex, b.columnIndex);
@@ -352,7 +369,6 @@ var Parser = (function() {
 							}
 						}
 					}
-					range.isRangeArray = true;
 					valueStack.push([range]);
 					break;
 				case type.REF:
@@ -407,7 +423,6 @@ var Parser = (function() {
 		function getPrecedence(token) {
 			switch(token.type) {
 			case type.LIST:
-			case type.LEFTPAR:
 				return -1;
 			case type.SUB:
 			case type.ADD:
@@ -422,6 +437,9 @@ var Parser = (function() {
 			case type.FUNC:
 			case type.CONCAT:
 				return 3;
+			case type.PAR:
+			case type.ARR:
+				return 4;
 			default:
 				throw "Unknown presedence type! " + JSON.stringify(token);
 			}
@@ -439,7 +457,6 @@ var Parser = (function() {
 
 			var newStack = [];
 			var operatorStack = [];
-			var pBalance = 0;
 			while(stack.length > 0) {
 				var token = stack.shift();
 				console.log('new token: ' + token.val);
@@ -447,49 +464,28 @@ var Parser = (function() {
 					newStack.push(token);
 					console.log('pushing it to stack as it is an operand: ' + logStack(newStack));
 				} else {
-					if(token.type === type.LEFTPAR) {
-						operatorStack.push(token);
-						pBalance++;
-						console.log('pushing it to operatorStack as token is "(": ' + logStack(operatorStack));
-					} else if(operatorStack.length === 0) {
+					if(operatorStack.length === 0) {
 						operatorStack.push(token);
 						console.log('pushing it to operatorStack as stack is zero lenght: ' + logStack(operatorStack));
 					} else {
-						if(token.type === type.RIGHTPAR) {
-							pBalance--;
-							console.log('token is ")" initiating pop')
-							while(operatorStack.length > 0) {
-								console.log('still more elements on the stack: ' + logStack(operatorStack));
-								var operator = operatorStack.pop();
-								if(operator.type === type.LEFTPAR) {
-									console.log('operator is "(", stopping pop')
-									break;
-								}
-								newStack.push(operator);
-								console.log('operator is "' + operator.val + '" pushing it to stack: ' + logStack(operatorStack))
+
+						while(true) {
+							if(operatorStack.length == 0) {
+								break;
 							}
-						} else {
-							while(true) {
-								if(operatorStack.length == 0) {
-									break;
-								}
-								operator = operatorStack.pop();
-								if(!hasHigherOrEqualPrecedence(operator, token) || operator.type === type.LEFTPAR) {
-									operatorStack.push(operator);
-									break;
-								}
-								newStack.push(operator);
-								console.log('popping operator "' + operator.val + '" (as it has higher precedence than token "' + token.val + '") and pushing it onto result: ' + logStack(newStack));
+							operator = operatorStack.pop();
+							if(!hasHigherOrEqualPrecedence(operator, token)) {
+								operatorStack.push(operator);
+								break;
 							}
-							operatorStack.push(token);
-							console.log('pushing operator "' + token.val + '" (as it has lower precedence): ' + logStack(operatorStack));
+							newStack.push(operator);
+							console.log('popping operator "' + operator.val + '" (as it has higher precedence than token "' + token.val + '") and pushing it onto result: ' + logStack(newStack));
 						}
+						operatorStack.push(token);
+						console.log('pushing operator "' + token.val + '" (as it has lower precedence): ' + logStack(operatorStack));
+						
 					}
 				}
-			}
-
-			if(pBalance !== 0) {
-				throw "not equal amounts of open or close characters!";
 			}
 
 			while(operatorStack.length > 0) {
@@ -699,17 +695,34 @@ Parser.fn = {
 		return a + " " + b;
 	},
 	list: function(a, b) {
-		if(Array.isArray(a) && Array.isArray(b)) {
+		if(this.isArgList(a) && this.isArgList(b)) {
 			a.push.apply(b);
 			return a;
-		} else if(Array.isArray(a)) {
+		} else if(this.isArgList(a)) {
 			a.push(b);
 			return a;
-		} else if(Array.isArray(b)) {
+		} else if(this.isArgList(b)) {
 			b.unshift(a);
 			return b;
 		}
-		return [a, b];
+		var argList = [a, b];
+		argList.isArgList = true;
+		return argList;
+	},
+	array: function(a, b) {
+		if(this.isArray(a) && this.isArray(b)) {
+			a.push.apply(b);
+			return a;
+		} else if(this.isArray(a)) {
+			a.push(b);
+			return a;
+		} else if(this.isArray(b)) {
+			b.unshift(a);
+			return b;
+		}
+		var array = [a, b];
+		array.isArray = true;
+		return array;
 	},
 	//INTRNAL HELPER FUNCTIONS
 	startsWith: function(str,s){
@@ -732,6 +745,15 @@ Parser.fn = {
 			}
 		}
 		return false;
+	},
+	isArray: function(v){
+		return Array.isArray(v) && v.isArray === true;
+	},
+	isRange: function(v){
+		return Array.isArray(v) && v.isRange === true;
+	},
+	isArgList: function(v){
+		return Array.isArray(v) && v.isArgList === true;
 	},
 	contains: function(str,s){
 		return str.indexOf(s) !== -1;

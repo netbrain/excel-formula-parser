@@ -122,7 +122,7 @@ test( "lex tRange", function() {
   var result = p.parse('A1:A2');
   var range = result[0];
   ok(Array.isArray(range));
-  ok(range.isRangeArray);
+  ok(range.isRange);
   ok(range.length === 2);
 
   for (var x = 0; x < range.length; x++){
@@ -166,6 +166,7 @@ test( "lex tArray", function() {
   deepEqual(p.parse('{1,2}'),[1,2]);
   deepEqual(p.parse('{1,2,3}'),[1,2,3]);
   deepEqual(p.parse('{1,,3}'),[1,undefined,3]);
+  equal(p.parse('{1,2}').isArray,true);
 });
 
 test( "lex tBool", function() {
