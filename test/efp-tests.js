@@ -348,5 +348,7 @@ test("PERCENTILE",function(){
   equal(p.parse('PERCENTILE(A1:A6,0.2)'),2);
   equal(p.parse('PERCENTILE(A1:A6,60%)'),4);
   equal(p.parse('PERCENTILE(A1:A6,50%)'),3.5);
+  equal(p.parse('PERCENTILE(A1:A6,2)'),Error.NUM);
+  equal(p.parse('PERCENTILE(A1:A6,"text")'),Error.VALUE);
 
 })

@@ -1689,7 +1689,9 @@ Parser.fn = {
 		throw "not implemented";
 	},
 	"PERCENTILE": function(array,P) {
-
+		if(!this.isNumber(P)) return Error.VALUE;
+		if(P > 1 || P < 0) return Error.NUM;
+		
 		if(this.isRange(array)){
 			var a = array;
 			array = [];
