@@ -352,3 +352,19 @@ test("PERCENTILE",function(){
   equal(p.parse('PERCENTILE(A1:A6,"text")'),Error.VALUE);
 
 })
+
+test("RANDBETWEEN",function(){
+  p.setData({
+    A1:1,
+    A2:10,
+  });
+
+  var rand;
+  rand = p.parse('RANDBETWEEN(1,10)');
+  ok(rand >= 1 && rand <= 10);
+  rand = p.parse('RANDBETWEEN(A1,A2)');
+  ok(rand >= 1 && rand <= 10);
+  rand = p.parse('RANDBETWEEN(A2-A1,SUM(A1,A2))');
+  ok(rand >= 9 && rand <= 11);
+
+})

@@ -1781,8 +1781,23 @@ Parser.fn = {
 	"RAND": function() {
 		throw "not implemented";
 	},
-	"RANDBETWEEN": function() {
-		throw "not implemented";
+	"RANDBETWEEN": function(bottom,top) {
+		if(this.isRef(bottom)){
+			bottom = bottom.valueOf();
+		}
+
+		if(this.isRef(top)){
+			top = top.valueOf();
+		}
+
+		if(!this.isNumber(bottom) || !this.isNumber(top)){
+			return Error.VALUE;
+		}
+
+		if(bottom > top) return Error.NUM;
+
+		var rand = Math.floor(Math.random() * (top - bottom + 1)) + bottom;
+		return rand;
 	},
 	"RANK": function() {
 		throw "not implemented";
