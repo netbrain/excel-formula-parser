@@ -432,7 +432,6 @@ var Parser = (function() {
 				}
 			}
 
-			console.log(valueStack)
 			if(valueStack.length === 1) {
 				return valueStack[0];
 			} else {
@@ -504,14 +503,14 @@ var Parser = (function() {
 			var operatorStack = [];
 			while(stack.length > 0) {
 				var token = stack.shift();
-				console.log('new token: ' + token.val);
+				////console.log('new token: ' + token.val);
 				if(isOperand(token)) {
 					newStack.push(token);
-					console.log('pushing it to stack as it is an operand: ' + logStack(newStack));
+					//console.log('pushing it to stack as it is an operand: ' + logStack(newStack));
 				} else {
 					if(operatorStack.length === 0) {
 						operatorStack.push(token);
-						console.log('pushing it to operatorStack as stack is zero lenght: ' + logStack(operatorStack));
+						//console.log('pushing it to operatorStack as stack is zero lenght: ' + logStack(operatorStack));
 					} else {
 
 						while(true) {
@@ -524,20 +523,20 @@ var Parser = (function() {
 								break;
 							}
 							newStack.push(operator);
-							console.log('popping operator "' + operator.val + '" (as it has higher precedence than token "' + token.val + '") and pushing it onto result: ' + logStack(newStack));
+							//console.log('popping operator "' + operator.val + '" (as it has higher precedence than token "' + token.val + '") and pushing it onto result: ' + logStack(newStack));
 						}
 						operatorStack.push(token);
-						console.log('pushing operator "' + token.val + '" (as it has lower precedence): ' + logStack(operatorStack));
+						//console.log('pushing operator "' + token.val + '" (as it has lower precedence): ' + logStack(operatorStack));
 						
 					}
 				}
 			}
 
 			while(operatorStack.length > 0) {
-				console.log('operator has more elements, popping and pushing');
+				//console.log('operator has more elements, popping and pushing');
 				newStack.push(operatorStack.pop());
 			}
-			console.log(logStack(newStack))
+			//console.log(logStack(newStack))
 			return newStack;
 		}
 
