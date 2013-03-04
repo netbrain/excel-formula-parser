@@ -293,9 +293,7 @@ var Parser = (function() {
 				lexer.lex[fn]();
 				if(this.pos !== pos) continue outer;
 			}
-			//Must be raw value
-			this.pos = this.input.length
-			this.emit(type.STR)
+			throw "Unknown input " + lexer.next();
 		}
 
 		return this.tokens
