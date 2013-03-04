@@ -273,6 +273,15 @@ var Parser = (function() {
 		this.pos = 0;
 		this.tokens = [];
 
+		//formula start
+		if(this.isNextConsume('=')){
+			if(this.input.length > 1){
+				newStart();				
+			}else{
+				this.emit(type.STR)
+			}
+		}		
+
 		//TODO optimize lexer to have each
 		//lexing function return a possible
 		//next state, instead of returning to 
@@ -284,7 +293,9 @@ var Parser = (function() {
 				lexer.lex[fn]();
 				if(this.pos !== pos) continue outer;
 			}
-			throw "Unknown input " + lexer.next();
+			//Must be raw value
+			this.pos = this.input.length
+			this.emit(type.STR)
 		}
 
 		return this.tokens
@@ -421,6 +432,7 @@ var Parser = (function() {
 				}
 			}
 
+			console.log(valueStack)
 			if(valueStack.length === 1) {
 				return valueStack[0];
 			} else {
@@ -590,7 +602,7 @@ Parser.Ref = function(pos, value, p, pCtx) {
 	this.referenceValue = function(){
 		if(this.value == null){
 			return null;
-		}
+		}		
 		if(typeof(this.value) === "number") {
 			return this.value;
 		}
@@ -622,6 +634,14 @@ Parser.Ref = function(pos, value, p, pCtx) {
 		return new String(this.valueOf());
 	};
 	this.setPosition(pos)
+
+	//if value is not primitive, try to convert
+	if(value != null && typeof(value) === "object"){
+		if(!value.valueOf) throw "Data object doesn't implement valueOf()";
+		value = value.valueOf();
+		if(value != null && typeof(value) === "object") throw "Data object did not return formula as a primitive!"
+	}
+
 	this.value = value;
 }
 
@@ -698,12 +718,6 @@ Parser.fn = {
 	},
 	percent: function(i) {
 		return i / 100;
-	},
-	unaryMinus: function(i) {
-		return -i;
-	},
-	unaryPlus: function(i) {
-		return +i;
 	},
 	add: function(a, b) {
 		if(!isNaN(a) && !isNaN(b)) {
