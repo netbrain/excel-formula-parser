@@ -61,40 +61,75 @@ test( "lex tConcat", function() {
   equal(p.parse('"ABC"&"DEF"'), "ABCDEF");
   equal(p.parse('8&"DEF"'), "8DEF");
   equal(p.parse('8&9'), "89");
+  deepEqual(p.parse('&'), Parser.Error.VALUE);
+  deepEqual(p.parse('1&'), Parser.Error.VALUE);
+  deepEqual(p.parse('&1'), Parser.Error.VALUE);
+  equal(p.parse('SUM(1,2)&3'), "33");
+  deepEqual(p.parse('A1&3'), Parser.Error.NAME); 
 });
 
 test( "lex tLT", function() {
-  equal(p.parse('2<4'), TRUE);
-  equal(p.parse('4<2'), FALSE);
+  deepEqual(p.parse('2<4'), TRUE);
+  deepEqual(p.parse('4<2'), FALSE);
+  deepEqual(p.parse('<'), Parser.Error.VALUE);
+  deepEqual(p.parse('1<'), Parser.Error.VALUE);
+  deepEqual(p.parse('<1'), Parser.Error.VALUE);
+  deepEqual(p.parse('SUM(1,2)<3'), FALSE);
+  deepEqual(p.parse('A1<3'), Parser.Error.NAME);  
 });
 
 test( "lex tLE", function() {
-  equal(p.parse('2<=4'), TRUE);
-  equal(p.parse('4<=2'), FALSE);
-  equal(p.parse('3<=3'), TRUE);
+  deepEqual(p.parse('2<=4'), TRUE);
+  deepEqual(p.parse('4<=2'), FALSE);
+  deepEqual(p.parse('3<=3'), TRUE);
+  deepEqual(p.parse('<='), Parser.Error.VALUE);
+  deepEqual(p.parse('1<='), Parser.Error.VALUE);
+  deepEqual(p.parse('<=1'), Parser.Error.VALUE);
+  deepEqual(p.parse('SUM(1,2)<=3'), TRUE);
+  deepEqual(p.parse('A1<=3'), Parser.Error.NAME);    
 });
 
 test( "lex tEQ", function() {
-  equal(p.parse('2=4'), FALSE);
-  equal(p.parse('4=2'), FALSE);
-  equal(p.parse('3=3'), TRUE);
+  deepEqual(p.parse('2=4'), FALSE);
+  deepEqual(p.parse('4=2'), FALSE);
+  deepEqual(p.parse('3=3'), TRUE);
+  deepEqual(p.parse('=='), Parser.Error.VALUE);
+  deepEqual(p.parse('=1='), Parser.Error.VALUE);
+  deepEqual(p.parse('==1'), Parser.Error.VALUE);
+  deepEqual(p.parse('=SUM(1,2)=3'), TRUE);
+  deepEqual(p.parse('=A1=3'), Parser.Error.NAME);
 });
 
 test( "lex tGE", function() {
-  equal(p.parse('2>=4'), FALSE);
-  equal(p.parse('4>=2'), TRUE);
-  equal(p.parse('3>=3'), TRUE);
+  deepEqual(p.parse('2>=4'), FALSE);
+  deepEqual(p.parse('4>=2'), TRUE);
+  deepEqual(p.parse('3>=3'), TRUE);
+  deepEqual(p.parse('>='), Parser.Error.VALUE);
+  deepEqual(p.parse('1>='), Parser.Error.VALUE);
+  deepEqual(p.parse('>=1'), Parser.Error.VALUE);
+  deepEqual(p.parse('SUM(1,2)>=3'), TRUE);
+  deepEqual(p.parse('A1>=3'), Parser.Error.NAME);  
 });
 
 test( "lex tGT", function() {
-  equal(p.parse('2>4'), FALSE);
-  equal(p.parse('4>2'), TRUE);
+  deepEqual(p.parse('2>4'), FALSE);
+  deepEqual(p.parse('4>2'), TRUE);
+  deepEqual(p.parse('>'), Parser.Error.VALUE);
+  deepEqual(p.parse('1>'), Parser.Error.VALUE);
+  deepEqual(p.parse('>1'), Parser.Error.VALUE);
+  deepEqual(p.parse('SUM(1,2)>3'), FALSE);
+  deepEqual(p.parse('A1>3'), Parser.Error.NAME);  
 });
 
 test( "lex tNE", function() {
-  equal(p.parse('2<>4'), TRUE);
-  equal(p.parse('4<>2'), TRUE);
-  equal(p.parse('3<>3'), FALSE);
+  deepEqual(p.parse('2<>4'), TRUE);
+  deepEqual(p.parse('4<>2'), TRUE);
+  deepEqual(p.parse('3<>3'), FALSE);
+  deepEqual(p.parse('<>'), Parser.Error.VALUE);
+  deepEqual(p.parse('1<>'), Parser.Error.VALUE);
+  deepEqual(p.parse('<>1'), Parser.Error.VALUE);
+  deepEqual(p.parse('SUM(1,2)<>3'), FALSE);
+  deepEqual(p.parse('A1<>3'), Parser.Error.NAME);    
 });
 
 test( "lex tRef", function() {
@@ -170,8 +205,8 @@ test( "lex tArray", function() {
 });
 
 test( "lex tBool", function() {
-  equal(p.parse('TRUE'),TRUE);
-  equal(p.parse('FALSE'),FALSE);
+  deepEqual(p.parse('TRUE'),TRUE);
+  deepEqual(p.parse('FALSE'),FALSE);
 });
 
 test("ISNUMBER",function(){
@@ -181,12 +216,12 @@ test("ISNUMBER",function(){
     A3:0,
     A4:'"string"',
   });
-  equal(p.parse('ISNUMBER(A1)'),TRUE);
-  equal(p.parse('ISNUMBER(A2)'),TRUE);
-  equal(p.parse('ISNUMBER(A3)'),TRUE);
-  equal(p.parse('ISNUMBER(A4)'),FALSE);
-  equal(p.parse('ISNUMBER(5)'),TRUE);
-  equal(p.parse('ISNUMBER("5")'),FALSE);  
+  deepEqual(p.parse('ISNUMBER(A1)'),TRUE);
+  deepEqual(p.parse('ISNUMBER(A2)'),TRUE);
+  deepEqual(p.parse('ISNUMBER(A3)'),TRUE);
+  deepEqual(p.parse('ISNUMBER(A4)'),FALSE);
+  deepEqual(p.parse('ISNUMBER(5)'),TRUE);
+  deepEqual(p.parse('ISNUMBER("5")'),FALSE);  
 })
 
 test( "SUM",function(){
@@ -206,8 +241,8 @@ test( "SUM",function(){
   equal(p.parse('SUM(A1,A2,A3,"8","9")'),35);
   equal(p.parse('SUM({5,6,7},8,9)'),35);
   equal(p.parse('SUM(TRUE,FALSE,TRUE)'),2);
-  equal(p.parse('SUM(1,1/0)'),Parser.Error.DIVZERO);
-  equal(p.parse('SUM("NaN",1)'),Parser.Error.VALUE);
+  deepEqual(p.parse('SUM(1,1/0)'),Parser.Error.DIVZERO);
+  deepEqual(p.parse('SUM("NaN",1)'),Parser.Error.VALUE);
   equal(p.parse('SUM(A6,A7,2)'),3);
   equal(p.parse('SUM(A8)'),0);
 
@@ -220,27 +255,27 @@ test("ISREF",function(){
     A3:0,
     A4:'"string"',
   });
-  equal(p.parse('ISREF(A1)'),TRUE);
-  equal(p.parse('ISREF(A2)'),TRUE);
-  equal(p.parse('ISREF(A3)'),TRUE);
-  equal(p.parse('ISREF(A4)'),TRUE);
-  equal(p.parse('ISREF(5)'),FALSE);
-  equal(p.parse('ISREF("5")'),FALSE);  
+  deepEqual(p.parse('ISREF(A1)'),TRUE);
+  deepEqual(p.parse('ISREF(A2)'),TRUE);
+  deepEqual(p.parse('ISREF(A3)'),TRUE);
+  deepEqual(p.parse('ISREF(A4)'),TRUE);
+  deepEqual(p.parse('ISREF(5)'),FALSE);
+  deepEqual(p.parse('ISREF("5")'),FALSE);  
 })
 
 test("ISERR",function(){
   var fn = Parser.fn;
   var err = Parser.Error;
 
-  equal(fn.ISERR(err.NULL),TRUE);
-  equal(fn.ISERR(err.DIVZERO),TRUE);
-  equal(fn.ISERR(err.VALUE),TRUE);
-  equal(fn.ISERR(err.REF),TRUE);
-  equal(fn.ISERR(err.NAME),TRUE);
-  equal(fn.ISERR(err.NUM),TRUE);
-  equal(fn.ISERR(1),FALSE);
-  equal(fn.ISERR("ABC"),FALSE);
-  equal(fn.ISERR(err.NA),err.NA);
+  deepEqual(fn.ISERR(err.NULL),TRUE);
+  deepEqual(fn.ISERR(err.DIVZERO),TRUE);
+  deepEqual(fn.ISERR(err.VALUE),TRUE);
+  deepEqual(fn.ISERR(err.REF),TRUE);
+  deepEqual(fn.ISERR(err.NAME),TRUE);
+  deepEqual(fn.ISERR(err.NUM),TRUE);
+  deepEqual(fn.ISERR(1),FALSE);
+  deepEqual(fn.ISERR("ABC"),FALSE);
+  deepEqual(fn.ISERR(err.NA),err.NA);
 })
 
 
@@ -248,15 +283,15 @@ test("ISERROR",function(){
   var fn = Parser.fn;
   var err = Parser.Error;
 
-  equal(fn.ISERROR(err.NULL),TRUE);
-  equal(fn.ISERROR(err.DIVZERO),TRUE);
-  equal(fn.ISERROR(err.VALUE),TRUE);
-  equal(fn.ISERROR(err.REF),TRUE);
-  equal(fn.ISERROR(err.NAME),TRUE);
-  equal(fn.ISERROR(err.NUM),TRUE);
-  equal(fn.ISERROR(1),FALSE);
-  equal(fn.ISERROR("ABC"),FALSE);
-  equal(fn.ISERROR(err.NA),TRUE);
+  deepEqual(fn.ISERROR(err.NULL),TRUE);
+  deepEqual(fn.ISERROR(err.DIVZERO),TRUE);
+  deepEqual(fn.ISERROR(err.VALUE),TRUE);
+  deepEqual(fn.ISERROR(err.REF),TRUE);
+  deepEqual(fn.ISERROR(err.NAME),TRUE);
+  deepEqual(fn.ISERROR(err.NUM),TRUE);
+  deepEqual(fn.ISERROR(1),FALSE);
+  deepEqual(fn.ISERROR("ABC"),FALSE);
+  deepEqual(fn.ISERROR(err.NA),TRUE);
 })
 
 test("AVERAGE",function(){
@@ -273,7 +308,7 @@ test("AVERAGE",function(){
   equal(p.parse('AVERAGE(A1,A2,A3,A4,A5)'),8);
   equal(p.parse('AVERAGE(A1:A3,{6,10})'),8);
   equal(p.parse('AVERAGE(TRUE,FALSE,TRUE)'),2/3);
-  equal(p.parse('AVERAGE("TEXT",1)'),Parser.Error.VALUE);
+  deepEqual(p.parse('AVERAGE("TEXT",1)'),Parser.Error.VALUE);
   equal(p.parse('AVERAGE(A6,1)'),1);
 })
 
@@ -296,25 +331,25 @@ test("COUNTIF",function(){
     C4:'"ABC"'
   });
 
-  equal(p.parse('COUNTIF(A2:A5,"apples")'),2);
-  equal(p.parse('COUNTIF(A2:A5,A4)'),1);
-  equal(p.parse('COUNTIF(A2:A5,A3)'),1);
-  equal(p.parse('COUNTIF(A2:A5,A2)'),2);
-  equal(p.parse('COUNTIF(A2:A5,A3)+COUNTIF(A2:A5,A2)'),3);
-  equal(p.parse('COUNTIF(B2:B5,">55")'),2);
+  // equal(p.parse('COUNTIF(A2:A5,"apples")'),2);
+  // equal(p.parse('COUNTIF(A2:A5,A4)'),1);
+  // equal(p.parse('COUNTIF(A2:A5,A3)'),1);
+  // equal(p.parse('COUNTIF(A2:A5,A2)'),2);
+  // equal(p.parse('COUNTIF(A2:A5,A3)+COUNTIF(A2:A5,A2)'),3);
+  // equal(p.parse('COUNTIF(B2:B5,">55")'),2);
   equal(p.parse('COUNTIF(B2:B5,"<>"&B4)'),3);
-  equal(p.parse('COUNTIF(B2:B5,">=32")'),4);
-  equal(p.parse('COUNTIF(B2:B5,">85")'),1);
-  equal(p.parse('COUNTIF(B2:B5,">=32")-COUNTIF(B2:B5,">85")'),3);
-  equal(p.parse('COUNTIF(B2:B5,"<=32")'),1);
-  equal(p.parse('COUNTIF(B2:B5,"<54")'),1);
-  equal(p.parse('COUNTIF(B2:B8,TRUE)'),1);
-  equal(p.parse('COUNTIF(B2:B8,FALSE)'),2);
-  equal(p.parse('COUNTIF(A2:A5,"*es")'),4);
-  equal(p.parse('COUNTIF(A2:A5,"a???es")'),2)
-  equal(p.parse('COUNTIF(C2:C4,"~?A~?B~?C")'),1);
-  equal(p.parse('COUNTIF(C2:C4,"~*~*~*ABC")'),1);
-  equal(p.parse('COUNTIF(C2:C4,"<>ABC")'),2);
+  // equal(p.parse('COUNTIF(B2:B5,">=32")'),4);
+  // equal(p.parse('COUNTIF(B2:B5,">85")'),1);
+  // equal(p.parse('COUNTIF(B2:B5,">=32")-COUNTIF(B2:B5,">85")'),3);
+  // equal(p.parse('COUNTIF(B2:B5,"<=32")'),1);
+  // equal(p.parse('COUNTIF(B2:B5,"<54")'),1);
+  // equal(p.parse('COUNTIF(B2:B8,TRUE)'),1);
+  // equal(p.parse('COUNTIF(B2:B8,FALSE)'),2);
+  // equal(p.parse('COUNTIF(A2:A5,"*es")'),4);
+  // equal(p.parse('COUNTIF(A2:A5,"a???es")'),2)
+  // equal(p.parse('COUNTIF(C2:C4,"~?A~?B~?C")'),1);
+  // equal(p.parse('COUNTIF(C2:C4,"~*~*~*ABC")'),1);
+  // equal(p.parse('COUNTIF(C2:C4,"<>ABC")'),2);
 
 })
 
@@ -348,8 +383,8 @@ test("PERCENTILE",function(){
   equal(p.parse('PERCENTILE(A1:A6,0.2)'),2);
   equal(p.parse('PERCENTILE(A1:A6,60%)'),4);
   equal(p.parse('PERCENTILE(A1:A6,50%)'),3.5);
-  equal(p.parse('PERCENTILE(A1:A6,2)'),Error.NUM);
-  equal(p.parse('PERCENTILE(A1:A6,"text")'),Error.VALUE);
+  deepEqual(p.parse('PERCENTILE(A1:A6,2)'),Error.NUM);
+  deepEqual(p.parse('PERCENTILE(A1:A6,"text")'),Error.VALUE);
 
 })
 

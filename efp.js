@@ -304,7 +304,12 @@ var Parser = (function() {
 			var fn = window.Parser.fn;
 			var parserFn = this.parse;
 			var data = this.data;
-			var stack = Lex(input);
+			var stack;
+			try{
+				stack = Lex(input);
+			}catch(err){
+				return window.Parser.Error.NAME;
+			}
 			stack = convertStackFromInfixToPostfix(stack);
 
 			var valueStack = [];
@@ -371,7 +376,8 @@ var Parser = (function() {
 					evaluateOperator(fn.isect, valueStack);
 					break;
 				case type.LIST:
-					evaluateOperator(fn.list, valueStack);
+					var args = valueStack.splice(-fn.list.length);
+					valueStack.push(fn.list.apply(window.Parser.fn,args));
 					break;
 				case type.PAR:
 					valueStack.push(this.parse(item.val.slice(1, item.val.length - 1)));
@@ -465,6 +471,12 @@ var Parser = (function() {
 		function getPrecedence(token) {
 			switch(token.type) {
 			case type.LIST:
+			case type.EQ:
+			case type.LT:
+			case type.LE:
+			case type.GE:
+			case type.GT:
+			case type.NE:
 				return -1;
 			case type.SUB:
 			case type.ADD:
@@ -538,9 +550,22 @@ var Parser = (function() {
 			return newStack;
 		}
 
-		function evaluateOperator(evaluator, stack) {
+		function evaluateOperator(evaluator, stack) {		
+			var result;	
 			var args = stack.splice(-evaluator.length);
-			var result = evaluator.apply(window.Parser.fn, args);
+			for (var x = 0; x < evaluator.length; x++){
+				if(args[x] == null){
+					result = window.Parser.Error.VALUE;
+					break;
+				}
+				if(window.Parser.fn.isError(args[x])){
+					result = args[x];
+					break;
+				}
+			}
+			if(result == null){
+				result = evaluator.apply(window.Parser.fn, args);
+			}
 			stack.push(result);
 		}
 
@@ -628,7 +653,7 @@ Parser.Ref = function(pos, value, p, pCtx) {
 		this.columnIndex = colIndex;
 	};
 	this.toString = function(){
-		return new String(this.valueOf());
+		return ''+this.valueOf();
 	};
 	this.setPosition(pos)
 
@@ -716,22 +741,22 @@ Parser.fn = {
 	percent: function(i) {
 		return i / 100;
 	},
-	add: function(a, b) {
-		if(!isNaN(a) && !isNaN(b)) {
-			return a + b;
-		}
-
-		if(!isNaN(a) && isNaN(b)) {
-			return +a;
+	add: function() {
+		if(arguments.length == 1){
+			return +arguments[0];
+		}else if(arguments.length == 2){
+			return arguments[0] + arguments[1];
+		}else{
+			return Parser.Error.VALUE;
 		}
 	},
-	sub: function(a, b) {
-		if(!isNaN(a) && !isNaN(b)) {
-			return a - b;
-		}
-
-		if(!isNaN(a) && isNaN(b)) {
-			return -a;
+	sub: function() {
+		if(arguments.length == 1){
+			return -arguments[0];
+		}else if(arguments.length == 2){
+			return arguments[0] - arguments[1];
+		}else{
+			return Parser.Error.VALUE;
 		}
 	},
 	mul: function(a, b) {
@@ -747,25 +772,31 @@ Parser.fn = {
 		return Math.pow(b, exp);
 	},
 	concat: function(a, b) {
-		return a.toString() + b.toString();
+		return (''+a)+(''+b);
 	},
-	lt: function(a, b) {
-		return a < b;
+	lt: function(a, b) {		
+		if(a < b) return Parser.Bool.TRUE;
+		return Parser.Bool.FALSE;
 	},
-	le: function(a, b) {
-		return a <= b;
+	le: function(a, b) {	
+		if(a <= b) return Parser.Bool.TRUE;
+		return Parser.Bool.FALSE;		
 	},
 	eq: function(a, b) {
-		return a === b;
+		if(a == b) return Parser.Bool.TRUE;
+		return Parser.Bool.FALSE;
 	},
 	ge: function(a, b) {
-		return a >= b;
+		if(a >= b) return Parser.Bool.TRUE;
+		return Parser.Bool.FALSE;		
 	},
 	gt: function(a, b) {
-		return a > b;
+		if(a > b) return Parser.Bool.TRUE;
+		return Parser.Bool.FALSE;
 	},
 	ne: function(a, b) {
-		return a !== b;
+		if(a !== b) return Parser.Bool.TRUE;
+		return Parser.Bool.FALSE;
 	},
 	isect: function(a, b) {
 		return a + " " + b;
