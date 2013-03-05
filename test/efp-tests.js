@@ -235,6 +235,7 @@ test( "SUM",function(){
     A7:'TRUE',
     A8:null
   });
+  equal(p.parse('SUM()'),0);
   equal(p.parse('SUM(A1:A5)'),35);
   equal(p.parse('SUM(5+6,7,8,9)'),35);
   equal(p.parse('SUM(A1:A3,8,9)'),35);
@@ -331,25 +332,25 @@ test("COUNTIF",function(){
     C4:'"ABC"'
   });
 
-  // equal(p.parse('COUNTIF(A2:A5,"apples")'),2);
-  // equal(p.parse('COUNTIF(A2:A5,A4)'),1);
-  // equal(p.parse('COUNTIF(A2:A5,A3)'),1);
-  // equal(p.parse('COUNTIF(A2:A5,A2)'),2);
-  // equal(p.parse('COUNTIF(A2:A5,A3)+COUNTIF(A2:A5,A2)'),3);
-  // equal(p.parse('COUNTIF(B2:B5,">55")'),2);
+  equal(p.parse('COUNTIF(A2:A5,"apples")'),2);
+  equal(p.parse('COUNTIF(A2:A5,A4)'),1);
+  equal(p.parse('COUNTIF(A2:A5,A3)'),1);
+  equal(p.parse('COUNTIF(A2:A5,A2)'),2);
+  equal(p.parse('COUNTIF(A2:A5,A3)+COUNTIF(A2:A5,A2)'),3);
+  equal(p.parse('COUNTIF(B2:B5,">55")'),2);
   equal(p.parse('COUNTIF(B2:B5,"<>"&B4)'),3);
-  // equal(p.parse('COUNTIF(B2:B5,">=32")'),4);
-  // equal(p.parse('COUNTIF(B2:B5,">85")'),1);
-  // equal(p.parse('COUNTIF(B2:B5,">=32")-COUNTIF(B2:B5,">85")'),3);
-  // equal(p.parse('COUNTIF(B2:B5,"<=32")'),1);
-  // equal(p.parse('COUNTIF(B2:B5,"<54")'),1);
-  // equal(p.parse('COUNTIF(B2:B8,TRUE)'),1);
-  // equal(p.parse('COUNTIF(B2:B8,FALSE)'),2);
-  // equal(p.parse('COUNTIF(A2:A5,"*es")'),4);
-  // equal(p.parse('COUNTIF(A2:A5,"a???es")'),2)
-  // equal(p.parse('COUNTIF(C2:C4,"~?A~?B~?C")'),1);
-  // equal(p.parse('COUNTIF(C2:C4,"~*~*~*ABC")'),1);
-  // equal(p.parse('COUNTIF(C2:C4,"<>ABC")'),2);
+  equal(p.parse('COUNTIF(B2:B5,">=32")'),4);
+  equal(p.parse('COUNTIF(B2:B5,">85")'),1);
+  equal(p.parse('COUNTIF(B2:B5,">=32")-COUNTIF(B2:B5,">85")'),3);
+  equal(p.parse('COUNTIF(B2:B5,"<=32")'),1);
+  equal(p.parse('COUNTIF(B2:B5,"<54")'),1);
+  equal(p.parse('COUNTIF(B2:B8,TRUE)'),1);
+  equal(p.parse('COUNTIF(B2:B8,FALSE)'),2);
+  equal(p.parse('COUNTIF(A2:A5,"*es")'),4);
+  equal(p.parse('COUNTIF(A2:A5,"a???es")'),2)
+  equal(p.parse('COUNTIF(C2:C4,"~?A~?B~?C")'),1);
+  equal(p.parse('COUNTIF(C2:C4,"~*~*~*ABC")'),1);
+  equal(p.parse('COUNTIF(C2:C4,"<>ABC")'),2);
 
 })
 

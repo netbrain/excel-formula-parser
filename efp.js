@@ -423,7 +423,15 @@ var Parser = (function() {
 					var argIndex = item.val.indexOf('(');
 					var functionName = item.val.substring(0,argIndex);
 					var args = item.val.substring(argIndex);
-					var argList = this.parse(args);
+					var argList;
+					if (args === '()'){
+						//zero arguments
+						argList = [];
+					}else{
+						//parse one or more arguments
+						argList = this.parse(args);
+					}
+					
 					if (!Array.isArray(argList)){
 						argList = [argList];	
 					}					
