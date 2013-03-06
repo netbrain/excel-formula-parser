@@ -6,6 +6,17 @@ QUnit.testStart = function (name) {
   p = Parser.newInstance();
 };
 
+test( "lex whitespace", function() {
+  equal(p.parse('2* 3'), 6);
+  equal(p.parse('2 * 3'), 6);
+  equal(p.parse('"2* 3"'), '2* 3');
+  equal(p.parse('"2 * 3"'), '2 * 3');
+  equal(p.parse('=COUNT(1, 2,3 )'), 3);
+  equal(p.parse('=COUNT( "1", " 2 ", "  3  " )'), 3);
+  equal(p.parse('=COUNT( "2 * 3", 2 * 3, "  2  *  3  " )'), 1);
+});
+
+
 test( "lex tNum", function() {
   equal(p.parse("1"), 1);
   equal(p.parse("10"),10);
@@ -145,7 +156,7 @@ test( "lex tRef", function() {
   equal(p.parse('C1').valueOf(), "STRING");  
   equal(p.parse('D1').valueOf(), 3);  
   equal(p.parse('E1').valueOf(), 3);  
-  equal(p.parse('E3').valueOf(), "#NAME?");
+  deepEqual(p.parse('E3').valueOf(), Parser.Error.NAME);
 });
 
 

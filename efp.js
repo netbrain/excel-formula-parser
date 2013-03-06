@@ -42,6 +42,11 @@ var Parser = (function() {
 		};
 
 		this.lex = {
+			whitespace: function(){
+				if(lexer.isNextConsume(' ')){
+					lexer.newStart();
+				}	
+			},
 			str: function() {
 				if(lexer.isNextConsume('"')) {
 					if(lexer.ignoreUntil('"')) {
@@ -170,7 +175,7 @@ var Parser = (function() {
 				if(lexer.accept("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")) {
 					lexer.emit(type.REF);
 				}
-			},
+			},			
 		};
 
 		this.next = function() {
@@ -302,14 +307,16 @@ var Parser = (function() {
 	function Parser(data) {
 		var fn = window.Parser.fn;
 		this.parse = function(input) {
+
+			if(typeof(input) !== 'string'){
+				if(fn.isError(input)) return input;
+				throw 'Expected string as input';
+			}
+
 			var parserFn = this.parse;
 			var data = this.data;
 			var stack;
-			try{
-				stack = Lex(input);
-			}catch(err){
-				return window.Parser.Error.NAME;
-			}
+			stack = Lex(input);
 			stack = convertStackFromInfixToPostfix(stack);
 
 			var valueStack = [];
