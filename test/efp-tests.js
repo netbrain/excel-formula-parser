@@ -145,7 +145,7 @@ test( "lex tRef", function() {
   equal(p.parse('C1').valueOf(), "STRING");  
   equal(p.parse('D1').valueOf(), 3);  
   equal(p.parse('E1').valueOf(), 3);  
-  equal(p.parse('E3').valueOf(), "#NAME?");  
+  equal(p.parse('E3').valueOf(), "#NAME?");
 });
 
 

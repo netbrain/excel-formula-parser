@@ -410,14 +410,15 @@ var Parser = (function() {
 					valueStack.push([range]);
 					break;
 				case type.REF:
+					var val;
+					var pos = item.val;
 					if(data != null && item.val in data) {
-						var pos = item.val
-						var val = data[pos];
-						var ref = new window.Parser.Ref(pos, val, parserFn, this);
-						valueStack.push(ref);
-						break;
+						val = data[pos];
+					}else{
+						val = window.Parser.Error.NAME;
 					}
-					valueStack.push(window.Parser.Error.NAME);
+					var ref = new window.Parser.Ref(pos, val, parserFn, this);
+					valueStack.push(ref);
 					break;
 				case type.FUNC:
 					var argIndex = item.val.indexOf('(');
@@ -566,6 +567,11 @@ var Parser = (function() {
 					result = window.Parser.Error.VALUE;
 					break;
 				}
+				if(window.Parser.fn.isRef(args[x]) && 
+					window.Parser.fn.isError(args[x].value)){
+					result = args[x].value;
+					break;
+				}				
 				if(window.Parser.fn.isError(args[x])){
 					result = args[x];
 					break;
@@ -666,7 +672,7 @@ Parser.Ref = function(pos, value, p, pCtx) {
 	this.setPosition(pos)
 
 	//if value is not primitive, try to convert
-	if(value != null && typeof(value) === "object"){
+	if(value != null && !Parser.fn.isError(value) && typeof(value) === "object"){
 		if(!value.valueOf) throw "Data object doesn't implement valueOf()";
 		value = value.valueOf();
 		if(value != null && typeof(value) === "object") throw "Data object did not return formula as a primitive!"
