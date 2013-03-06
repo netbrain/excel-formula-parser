@@ -300,8 +300,8 @@ var Parser = (function() {
 	}
 
 	function Parser(data) {
+		var fn = window.Parser.fn;
 		this.parse = function(input) {
-			var fn = window.Parser.fn;
 			var parserFn = this.parse;
 			var data = this.data;
 			var stack;
@@ -567,24 +567,23 @@ var Parser = (function() {
 					result = window.Parser.Error.VALUE;
 					break;
 				}
-				if(window.Parser.fn.isRef(args[x]) && 
-					window.Parser.fn.isError(args[x].value)){
+				if(fn.isRef(args[x]) && 
+					fn.isError(args[x].value)){
 					result = args[x].value;
 					break;
 				}				
-				if(window.Parser.fn.isError(args[x])){
+				if(fn.isError(args[x])){
 					result = args[x];
 					break;
 				}
 			}
 			if(result == null){
-				result = evaluator.apply(window.Parser.fn, args);
+				result = evaluator.apply(fn, args);
 			}
 			stack.push(result);
 		}
 
 		function evaluateFunction(fnName, stack) {
-			var fn = window.Parser.fn;
 			if(fnName in fn) {
 				var args = stack.pop();
 				var result = fn[fnName].apply(fn, args);
