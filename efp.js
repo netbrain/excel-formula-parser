@@ -459,7 +459,7 @@ var Parser = (function() {
 					if(data != null && item.val in data) {
 						val = data[pos];
 					}else{
-						val = '';
+						val = null;
 					}
 					var ref = new window.Parser.Ref(pos, val, {
 									context: this,
@@ -496,7 +496,7 @@ var Parser = (function() {
 			if(valueStack.length === 1) {
 				return valueStack[0];
 			} else if(valueStack.length === 0) {
-				return '';
+				return null;
 			}else{
 				throw "Could not evaluate " + JSON.stringify(valueStack);
 			}
@@ -626,11 +626,15 @@ var Parser = (function() {
 					result = window.Parser.Error.VALUE;
 					break;
 				}
-				if(fn.isRef(args[x]) && 
-					fn.isError(args[x].value)){
-					result = args[x].value;
-					break;
-				}				
+				if(fn.isRef(args[x])){
+					if(fn.isError(args[x].value)){
+						result = args[x].value;
+						break;
+					}
+					if(args[x].value == null){
+						args[x] = '';
+					}										
+				}			
 				if(fn.isError(args[x])){
 					result = args[x];
 					break;
@@ -666,18 +670,18 @@ var Parser = (function() {
 
 Parser.Ref = function(pos, value, fnObj) {
 	this.valueOf = function() {	
-		var value = this.referenceValue();
-		if(value != null && typeof(value) === "object"){
+		var value = this.referenceValue();		
+		while(value != null && typeof(value) === "object"){
 			value = value.valueOf();
 		}
 		return value;
 	};
 
 	this.isNumeric = function(){		
-		var v = this.valueOf();
+		var v = this.referenceValue();
 		if(v == null) return false;
 		if(Parser.fn.isString(v)){
-			return v.isNumeric();
+			return v.isNumeric();		
 		}else{
 			return !isNaN(v);
 		}
@@ -699,7 +703,7 @@ Parser.Ref = function(pos, value, fnObj) {
 			return this.value;
 		}
 		return fnObj.fn.call(fnObj.context, this.value, fnObj.id);
-	}
+	};
 
 	this.setPosition = function(pos) {
 		var col = "";
@@ -758,7 +762,9 @@ Parser.String = function(str){
 	};
 
 	this.isNumeric = function(){
-		return str != null && !isNaN(str);
+		if(str == null) return false;
+		if(str.replace(/(^\s+|\s+$)/g,'') === '') return false;
+		return !isNaN(str);
 	};
 
 }
@@ -900,6 +906,7 @@ Parser.fn = {
 	isError: function(v){
 		return v instanceof Parser.Error;
 	},
+	//Returns true if the value is a true number.
 	isNumber: function(v){
 		if(v == null) return false;
 		if(this.isString(v)) return false;
@@ -913,6 +920,25 @@ Parser.fn = {
 		if (typeof(v) === "number") return true;		
 		if (typeof(v) === "object" && typeof(v.valueOf()) === "number"){
 			return true;
+		}
+		
+		return false;
+	},
+	//Returns true if the value seems to be a number
+	isNumeric:function(v){
+		if(v == null) return false;
+		if(this.isString(v)){
+			return v.isNumeric();
+		}
+		if(this.isBool(v)) return false;
+		if(this.isError(v)) return false;		
+
+		if(this.isRef(v)){
+			return v.isNumeric();
+		}
+	
+		if (typeof(v) === "object"){
+			return this.isNumeric(v.valueOf());
 		}
 		
 		return false;
@@ -998,7 +1024,7 @@ Parser.fn = {
 			if(this.isNumber(val) || this.isBool(val) || Array.isArray(val)){
 				filteredVals.push(val);
 			}else if(this.isRef(val)){
-				if(val.isNumeric()){
+				if(this.isNumeric(val)){
 					filteredVals.push(val);
 				}
 			}else if(val != null && !isNaN(val)){
@@ -1158,7 +1184,7 @@ Parser.fn = {
 				}
 			}else if(this.isNumber(v) || this.isBool(v)){
 				count++;
-			}else if(this.isString(v) && v.isNumeric()){
+			}else if(this.isString(v) && this.isNumeric(v)){
 				count++;
 			}
 		}
@@ -2048,7 +2074,7 @@ Parser.fn = {
 			if(this.isNumber(a[x]) || this.isBool(a[x])) {					
 				sum += a[x];
 			}else if (this.isRef(a[x])){
-				if(a[x].isNumeric()){
+				if(this.isNumeric(a[x])){
 					sum += parseFloat(a[x]);
 				}			
 			}else if(Array.isArray(a[x])){

@@ -156,7 +156,7 @@ test( "lex tRef", function() {
   deepEqual(p.parse('C1').valueOf(), "STRING");  
   deepEqual(p.parse('D1').valueOf(), 3);  
   deepEqual(p.parse('E1').valueOf(), 3);  
-  deepEqual(p.parse('E3').valueOf(), '');
+  deepEqual(p.parse('E3').valueOf(), null);
 });
 
 
@@ -220,6 +220,25 @@ test( "lex tBool", function() {
   deepEqual(p.parse('FALSE'),FALSE);
 });
 
+test("isNumeric test",function(){
+  ok(!Parser.fn.isNumeric(p.parse('""')));
+  ok(Parser.fn.isNumeric(p.parse('"1"')));
+  ok(Parser.fn.isNumeric(p.parse('"   1.12039  "')));
+  ok(!Parser.fn.isNumeric(p.parse('"   1.12039 abc "')));
+  ok(!Parser.fn.isNumeric(null));
+  ok(!Parser.fn.isNumeric(TRUE));
+  ok(!Parser.fn.isNumeric(FALSE));
+  ok(!Parser.fn.isNumeric(Parser.Error.VALUE));
+
+  var obj = {
+    valueOf: function(){
+      return '';
+    }
+  }
+  ok(!Parser.fn.isNumeric(obj));
+
+})
+
 test("ISNUMBER",function(){
   p.setData({
     A1:23.8,
@@ -244,7 +263,9 @@ test( "SUM",function(){
     A5:9,
     A6:'"NaN"',
     A7:'TRUE',
-    A8:null
+    A8:1,
+    A9:'1',
+    A10:''
   });
   equal(p.parse('SUM()'),0);
   equal(p.parse('SUM(A1:A5)'),35);
@@ -256,7 +277,10 @@ test( "SUM",function(){
   deepEqual(p.parse('SUM(1,1/0)'),Parser.Error.DIVZERO);
   deepEqual(p.parse('SUM("NaN",1)'),Parser.Error.VALUE);
   equal(p.parse('SUM(A6,A7,2)'),3);
-  equal(p.parse('SUM(A8)'),0);
+  equal(p.parse('SUM(B1)'),0);
+  equal(p.parse('SUM(A8:B8)'),1);
+  equal(p.parse('SUM(A9:B9)'),1);
+  equal(p.parse('SUM(A9:A10)'),1);
 
 });
 
