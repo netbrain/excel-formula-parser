@@ -306,14 +306,39 @@ var Parser = (function() {
 
 	function Parser(data) {
 		var fn = window.Parser.fn;
-		this.parse = function(input) {
+		var references;
+		
+		this.getReferences = function(id){
+			if(!this.hasReferences(id)){
+				return null;
+			}
+
+			var refs = [];
+			for (var key in references[id]){
+				refs.push(key);
+			}
+
+			return refs;
+		}
+
+		this.hasReferences = function(id){
+			if(references != null && references[id] != null){
+				return true;
+			}
+			return false;
+		}
+
+		this.parse = function(input,id) {
+
+			if(id != null && references == null){
+				references = {};
+			}
 
 			if(typeof(input) !== 'string'){
 				if(fn.isError(input)) return input;
 				throw 'Expected string as input';
 			}
 
-			var parserFn = this.parse;
 			var data = this.data;
 			var stack;
 			stack = Lex(input);
@@ -387,10 +412,10 @@ var Parser = (function() {
 					valueStack.push(fn.list.apply(window.Parser.fn,args));
 					break;
 				case type.PAR:
-					valueStack.push(this.parse(item.val.slice(1, item.val.length - 1)));
+					valueStack.push(this.parse(item.val.slice(1, item.val.length - 1),id));
 					break;
 				case type.ARR:
-					var arr = this.parse(item.val.slice(1, item.val.length - 1));
+					var arr = this.parse(item.val.slice(1, item.val.length - 1),id);
 					arr.isArray = true;
 					valueStack.push(arr);
 					break;
@@ -409,7 +434,11 @@ var Parser = (function() {
 							var pos = window.Parser.Ref.getColumnByIndex(c) + r;
 							if(data != null && pos in data) {
 								var val = data[pos];
-								var ref = new window.Parser.Ref(pos, val, parserFn, this);
+								var ref = new window.Parser.Ref(pos, val, {
+									context: this,
+									fn: this.parse,
+									id: id,
+								});
 								range.push(ref);
 							}
 						}
@@ -417,14 +446,24 @@ var Parser = (function() {
 					valueStack.push([range]);
 					break;
 				case type.REF:
+					var pos = item.val;					
+					if(references != null){
+						if(references[id] == null){
+							references[id] = {};
+						}
+						references[id][pos] = true;
+					}
 					var val;
-					var pos = item.val;
 					if(data != null && item.val in data) {
 						val = data[pos];
 					}else{
 						val = window.Parser.Error.NAME;
 					}
-					var ref = new window.Parser.Ref(pos, val, parserFn, this);
+					var ref = new window.Parser.Ref(pos, val, {
+									context: this,
+									fn: this.parse,
+									id: id,
+								});
 					valueStack.push(ref);
 					break;
 				case type.FUNC:
@@ -437,7 +476,7 @@ var Parser = (function() {
 						argList = [];
 					}else{
 						//parse one or more arguments
-						argList = this.parse(args);
+						argList = this.parse(args,id);
 					}
 					
 					if (!Array.isArray(argList)){
@@ -606,15 +645,13 @@ var Parser = (function() {
 		newInstance: function(data) {
 			return new Parser(data);
 		},
-		parse:function(input){
-			return new Parser().parse(input);
+		parse:function(input,id){
+			return new Parser().parse(input,id);
 		},
 	};
 })();
 
-Parser.Ref = function(pos, value, p, pCtx) {
-	var p = p;
-	var pCtx = pCtx;
+Parser.Ref = function(pos, value, fnObj) {
 	this.valueOf = function() {	
 		var value = this.referenceValue();
 		if(value != null && typeof(value) === "object"){
@@ -648,7 +685,7 @@ Parser.Ref = function(pos, value, p, pCtx) {
 		if(typeof(this.value) === "number") {
 			return this.value;
 		}
-		return p.call(pCtx, this.value);
+		return fnObj.fn.call(fnObj.context, this.value, fnObj.id);
 	}
 
 	this.setPosition = function(pos) {
