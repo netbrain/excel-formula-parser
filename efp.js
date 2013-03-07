@@ -420,10 +420,10 @@ var Parser = (function() {
 					valueStack.push(arr);
 					break;
 				case type.RANGE:
-					var range = [];
-					range.isRange = true;
 					var b = valueStack.pop();
 					var a = valueStack.pop();
+					var range = [a];
+					range.isRange = true;
 					var mincol = Math.min(a.columnIndex, b.columnIndex);
 					var maxcol = Math.max(a.columnIndex, b.columnIndex);
 					var minrow = Math.min(a.row, b.row);
@@ -431,7 +431,12 @@ var Parser = (function() {
 
 					for(var c = mincol; c <= maxcol; c++) {
 						for(var r = minrow; r <= maxrow; r++) {
+							//Skip first and last.
+							if((c === mincol && r === minrow) || (c === maxcol && r === maxrow)){
+								continue;
+							}
 							var pos = window.Parser.Ref.getColumnByIndex(c) + r;
+							addReference(id,pos);							
 							if(data != null && pos in data) {
 								var val = data[pos];
 								var ref = new window.Parser.Ref(pos, val, {
@@ -443,16 +448,13 @@ var Parser = (function() {
 							}
 						}
 					}
+					range.push(b);
 					valueStack.push([range]);
 					break;
 				case type.REF:
-					var pos = item.val;					
-					if(references != null){
-						if(references[id] == null){
-							references[id] = {};
-						}
-						references[id][pos] = true;
-					}
+					var pos = item.val;
+					addReference(id,pos);
+
 					var val;
 					if(data != null && item.val in data) {
 						val = data[pos];
@@ -503,6 +505,15 @@ var Parser = (function() {
 		}
 
 		this.data = data;
+
+		function addReference(id,pos){
+			if(references != null){
+				if(references[id] == null){
+					references[id] = {};
+				}
+				references[id][pos] = true;
+			}
+		}
 
 		function isOperand(token) {
 			switch(token.type) {
