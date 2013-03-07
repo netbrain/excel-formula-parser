@@ -459,7 +459,7 @@ var Parser = (function() {
 					if(data != null && item.val in data) {
 						val = data[pos];
 					}else{
-						val = window.Parser.Error.NAME;
+						val = '';
 					}
 					var ref = new window.Parser.Ref(pos, val, {
 									context: this,
@@ -495,7 +495,9 @@ var Parser = (function() {
 
 			if(valueStack.length === 1) {
 				return valueStack[0];
-			} else {
+			} else if(valueStack.length === 0) {
+				return '';
+			}else{
 				throw "Could not evaluate " + JSON.stringify(valueStack);
 			}
 		},

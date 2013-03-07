@@ -76,7 +76,7 @@ test( "lex tConcat", function() {
   deepEqual(p.parse('1&'), Parser.Error.VALUE);
   deepEqual(p.parse('&1'), Parser.Error.VALUE);
   equal(p.parse('SUM(1,2)&3'), "33");
-  deepEqual(p.parse('A1&3'), Parser.Error.NAME); 
+  deepEqual(p.parse('A1&3'), "3"); 
 });
 
 test( "lex tLT", function() {
@@ -86,7 +86,7 @@ test( "lex tLT", function() {
   deepEqual(p.parse('1<'), Parser.Error.VALUE);
   deepEqual(p.parse('<1'), Parser.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)<3'), FALSE);
-  deepEqual(p.parse('A1<3'), Parser.Error.NAME);  
+  deepEqual(p.parse('A1<3'), TRUE);  
 });
 
 test( "lex tLE", function() {
@@ -97,7 +97,7 @@ test( "lex tLE", function() {
   deepEqual(p.parse('1<='), Parser.Error.VALUE);
   deepEqual(p.parse('<=1'), Parser.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)<=3'), TRUE);
-  deepEqual(p.parse('A1<=3'), Parser.Error.NAME);    
+  deepEqual(p.parse('A1<=3'), TRUE);    
 });
 
 test( "lex tEQ", function() {
@@ -108,7 +108,7 @@ test( "lex tEQ", function() {
   deepEqual(p.parse('=1='), Parser.Error.VALUE);
   deepEqual(p.parse('==1'), Parser.Error.VALUE);
   deepEqual(p.parse('=SUM(1,2)=3'), TRUE);
-  deepEqual(p.parse('=A1=3'), Parser.Error.NAME);
+  deepEqual(p.parse('=A1=3'), FALSE);
 });
 
 test( "lex tGE", function() {
@@ -119,7 +119,7 @@ test( "lex tGE", function() {
   deepEqual(p.parse('1>='), Parser.Error.VALUE);
   deepEqual(p.parse('>=1'), Parser.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)>=3'), TRUE);
-  deepEqual(p.parse('A1>=3'), Parser.Error.NAME);  
+  deepEqual(p.parse('A1>=3'), FALSE);  
 });
 
 test( "lex tGT", function() {
@@ -129,7 +129,7 @@ test( "lex tGT", function() {
   deepEqual(p.parse('1>'), Parser.Error.VALUE);
   deepEqual(p.parse('>1'), Parser.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)>3'), FALSE);
-  deepEqual(p.parse('A1>3'), Parser.Error.NAME);  
+  deepEqual(p.parse('A1>3'), FALSE);  
 });
 
 test( "lex tNE", function() {
@@ -140,7 +140,7 @@ test( "lex tNE", function() {
   deepEqual(p.parse('1<>'), Parser.Error.VALUE);
   deepEqual(p.parse('<>1'), Parser.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)<>3'), FALSE);
-  deepEqual(p.parse('A1<>3'), Parser.Error.NAME);    
+  deepEqual(p.parse('A1<>3'), TRUE);    
 });
 
 test( "lex tRef", function() {
@@ -151,12 +151,12 @@ test( "lex tRef", function() {
     D1:'SUM(1,2)',
     E1:'SUM(A1,B1)',
   });
-  equal(p.parse('A1').valueOf(), 1);
-  equal(p.parse('B1').valueOf(), 2);  
-  equal(p.parse('C1').valueOf(), "STRING");  
-  equal(p.parse('D1').valueOf(), 3);  
-  equal(p.parse('E1').valueOf(), 3);  
-  deepEqual(p.parse('E3').valueOf(), Parser.Error.NAME);
+  deepEqual(p.parse('A1').valueOf(), 1);
+  deepEqual(p.parse('B1').valueOf(), 2);  
+  deepEqual(p.parse('C1').valueOf(), "STRING");  
+  deepEqual(p.parse('D1').valueOf(), 3);  
+  deepEqual(p.parse('E1').valueOf(), 3);  
+  deepEqual(p.parse('E3').valueOf(), '');
 });
 
 
