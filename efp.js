@@ -45,14 +45,14 @@ var Parser = (function() {
 			whitespace: function(){
 				if(lexer.isNextConsume(' ')){
 					lexer.newStart();
-				}	
+				}
 			},
 			str: function() {
 				if(lexer.isNextConsume('"')) {
 					if(lexer.ignoreUntil('"')) {
 						lexer.emit(type.STR);
 					} else {
-						throw "Error occured parsing string!"
+						throw "Error occured parsing string!";
 					}
 				}
 			},
@@ -158,7 +158,7 @@ var Parser = (function() {
 				if(lexer.isNextArr()) {
 					lexer.emit(type.ARR);
 				}
-			},			
+			},
 			func: function() {
 				if(lexer.isNextFunc()) {
 					lexer.emit(type.FUNC);
@@ -175,12 +175,12 @@ var Parser = (function() {
 				if(lexer.accept("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")) {
 					lexer.emit(type.REF);
 				}
-			},			
+			}
 		};
 
 		this.next = function() {
 			var n = this.input[this.pos];
-			this.pos++
+			this.pos++;
 			return n;
 		};
 
@@ -225,10 +225,10 @@ var Parser = (function() {
 
 		//helper function to stay dry
 		this._isNextGroup = function(startChar,endChar){
+			var b = 1;
 			if(lexer.isNextConsume(startChar)) {
-				var b = 1;
 				while(!lexer.isAtEndOfLine()){
-					var n = lexer.next();					
+					var n = lexer.next();
 					if(n === startChar){
 						b++;
 					}else if(n === endChar){
@@ -239,7 +239,7 @@ var Parser = (function() {
 				}
 			}
 			return b === 0;
-		}
+		};
 
 		this.accept = function(str) {
 			var accepted = false;
@@ -270,7 +270,7 @@ var Parser = (function() {
 		};
 
 		this.isAtEndOfLine = function(){
-			return this.start >= this.input.length
+			return this.start >= this.input.length;
 		};
 
 		this.input = input;
@@ -281,11 +281,11 @@ var Parser = (function() {
 		//formula start
 		if(this.isNextConsume('=')){
 			if(this.input.length > 1){
-				newStart();				
+				newStart();
 			}else{
-				this.emit(type.STR)
+				this.emit(type.STR);
 			}
-		}		
+		}
 
 		//TODO optimize lexer to have each
 		//lexing function return a possible
@@ -301,13 +301,13 @@ var Parser = (function() {
 			throw "Unknown input " + lexer.next();
 		}
 
-		return this.tokens
+		return this.tokens;
 	}
 
 	function Parser(data) {
 		var fn = window.Parser.fn;
 		var references;
-		
+
 		this.getReferences = function(id){
 			if(!this.hasReferences(id)){
 				return null;
@@ -319,18 +319,18 @@ var Parser = (function() {
 			}
 
 			return refs;
-		}
+		};
 
 		this.hasReferences = function(id){
-			if(references != null && references[id] != null){
+			if(references && references[id]){
 				return true;
 			}
 			return false;
-		}
+		};
 
 		this.parse = function(input,id) {
 
-			if(id != null && references == null){
+			if(id && !references){
 				references = {};
 			}
 
@@ -340,8 +340,7 @@ var Parser = (function() {
 			}
 
 			var data = this.data;
-			var stack;
-			stack = Lex(input);
+			var stack = Lex(input);
 			stack = convertStackFromInfixToPostfix(stack);
 
 			var valueStack = [];
@@ -408,7 +407,7 @@ var Parser = (function() {
 					evaluateOperator(fn.isect, valueStack);
 					break;
 				case type.LIST:
-					var args = valueStack.splice(-fn.list.length);
+					var args = valueStack.splice(valueStack.length-fn.list.length,fn.list.length);
 					valueStack.push(fn.list.apply(window.Parser.fn,args));
 					break;
 				case type.PAR:
@@ -436,13 +435,13 @@ var Parser = (function() {
 								continue;
 							}
 							var pos = window.Parser.Ref.getColumnByIndex(c) + r;
-							addReference(id,pos);							
-							if(data != null && pos in data) {
+							addReference(id,pos);
+							if(data && pos in data) {
 								var val = data[pos];
 								var ref = new window.Parser.Ref(pos, val, {
 									context: this,
 									fn: this.parse,
-									id: id,
+									id: id
 								});
 								range.push(ref);
 							}
@@ -456,7 +455,7 @@ var Parser = (function() {
 					addReference(id,pos);
 
 					var val;
-					if(data != null && item.val in data) {
+					if(data && item.val in data) {
 						val = data[pos];
 					}else{
 						val = null;
@@ -464,7 +463,7 @@ var Parser = (function() {
 					var ref = new window.Parser.Ref(pos, val, {
 									context: this,
 									fn: this.parse,
-									id: id,
+									id: id
 								});
 					valueStack.push(ref);
 					break;
@@ -480,10 +479,10 @@ var Parser = (function() {
 						//parse one or more arguments
 						argList = this.parse(args,id);
 					}
-					
-					if (!Array.isArray(argList)){
-						argList = [argList];	
-					}					
+
+					if (!(argList instanceof Array)){
+						argList = [argList];
+					}
 					argList.isArgList = true;
 					valueStack.push(argList);
 					evaluateFunction(functionName, valueStack);
@@ -504,13 +503,13 @@ var Parser = (function() {
 
 		this.setData = function(data) {
 			this.data = data;
-		}
+		};
 
 		this.data = data;
 
 		function addReference(id,pos){
-			if(references != null){
-				if(references[id] == null){
+			if(references){
+				if(!references[id]){
 					references[id] = {};
 				}
 				references[id][pos] = true;
@@ -519,7 +518,7 @@ var Parser = (function() {
 
 		function isOperand(token) {
 			switch(token.type) {
-		    case type.BOOL:
+			case type.BOOL:
 			case type.NUM:
 			case type.STR:
 			case type.REF:
@@ -572,7 +571,7 @@ var Parser = (function() {
 			function logStack(stack) {
 				var out = "";
 				stack.forEach(function(t) {
-					out += t.val
+					out += t.val;
 				});
 				return out;
 			}
@@ -592,7 +591,7 @@ var Parser = (function() {
 					} else {
 
 						while(true) {
-							if(operatorStack.length == 0) {
+							if(operatorStack.length === 0) {
 								break;
 							}
 							operator = operatorStack.pop();
@@ -605,7 +604,6 @@ var Parser = (function() {
 						}
 						operatorStack.push(token);
 						//console.log('pushing operator "' + token.val + '" (as it has lower precedence): ' + logStack(operatorStack));
-						
 					}
 				}
 			}
@@ -618,11 +616,16 @@ var Parser = (function() {
 			return newStack;
 		}
 
-		function evaluateOperator(evaluator, stack) {		
-			var result;	
-			var args = stack.splice(-evaluator.length);
+		function evaluateOperator(evaluator, stack) {
+			var result;
+			var args;
+			if(evaluator.length === 0){
+				args = stack.splice(0,stack.length);
+			}else{
+				args = stack.splice(stack.length-evaluator.length,evaluator.length);
+			}
 			for (var x = 0; x < evaluator.length; x++){
-				if(args[x] == null){
+				if(args[x] === undefined){
 					result = window.Parser.Error.VALUE;
 					break;
 				}
@@ -631,16 +634,16 @@ var Parser = (function() {
 						result = args[x].value;
 						break;
 					}
-					if(args[x].value == null){
+					if(args[x].value === undefined || args[x].value === null){
 						args[x] = '';
-					}										
-				}			
+					}
+				}
 				if(fn.isError(args[x])){
 					result = args[x];
 					break;
 				}
 			}
-			if(result == null){
+			if(!result){
 				result = evaluator.apply(fn, args);
 			}
 			stack.push(result);
@@ -664,30 +667,30 @@ var Parser = (function() {
 		},
 		parse:function(input,id){
 			return new Parser().parse(input,id);
-		},
+		}
 	};
 })();
 
 Parser.Ref = function(pos, value, fnObj) {
-	this.valueOf = function() {	
-		var value = this.referenceValue();		
-		while(value != null && typeof(value) === "object"){
+	this.valueOf = function() {
+		var value = this.referenceValue();
+		while(value !== null && typeof(value) === "object"){
 			value = value.valueOf();
 		}
 		return value;
 	};
 
-	this.isNumeric = function(){		
+	this.isNumeric = function(){
 		var v = this.referenceValue();
-		if(v == null) return false;
+		if(v === null) return false;
 		if(Parser.fn.isString(v)){
-			return v.isNumeric();		
+			return v.isNumeric();
 		}else{
 			return !isNaN(v);
 		}
 	};
 
-	this.isNumber = function(){		
+	this.isNumber = function(){
 		if (typeof(this.referenceValue()) === "number"){
 			return true;
 		}
@@ -696,9 +699,9 @@ Parser.Ref = function(pos, value, fnObj) {
 	};
 
 	this.referenceValue = function(){
-		if(this.value == null){
+		if(this.value === null){
 			return null;
-		}		
+		}
 		if(typeof(this.value) === "number") {
 			return this.value;
 		}
@@ -722,24 +725,24 @@ Parser.Ref = function(pos, value, fnObj) {
 			}
 		}
 		this.column = col;
-		this.row = parseInt(row);
+		this.row = parseInt(row,10);
 		this.position = pos;
 		this.columnIndex = colIndex;
 	};
 	this.toString = function(){
 		return ''+this.valueOf();
 	};
-	this.setPosition(pos)
+	this.setPosition(pos);
 
 	//if value is not primitive, try to convert
-	if(value != null && !Parser.fn.isError(value) && typeof(value) === "object"){
+	if(value !== null && !Parser.fn.isError(value) && typeof(value) === "object"){
 		if(!value.valueOf) throw "Data object doesn't implement valueOf()";
 		value = value.valueOf();
-		if(value != null && typeof(value) === "object") throw "Data object did not return formula as a primitive!"
+		if(value !== null && typeof(value) === "object") throw "Data object did not return formula as a primitive!";
 	}
 
 	this.value = value;
-}
+};
 
 Parser.Ref.getColumnByIndex = function(i) {
 	var start = 65; //A       
@@ -747,9 +750,9 @@ Parser.Ref.getColumnByIndex = function(i) {
 		return String.fromCharCode(i + start);
 	} else {
 		var n = (i) / 26 - 1;
-		return f(n) + f(i % 26)
+		return f(n) + f(i % 26);
 	}
-}
+};
 
 Parser.String = function(str){
 
@@ -762,12 +765,13 @@ Parser.String = function(str){
 	};
 
 	this.isNumeric = function(){
-		if(str == null) return false;
 		if(str.replace(/(^\s+|\s+$)/g,'') === '') return false;
 		return !isNaN(str);
 	};
 
-}
+	if(typeof(str) !== 'string') throw "Expected string as input!";
+
+};
 
 Parser.Bool = function(b){
 	if(b === 'TRUE'){
@@ -775,21 +779,21 @@ Parser.Bool = function(b){
 	}else if(b === 'FALSE'){
 		b = 0;
 	}else{
-		throw "Illegal argument, should be one of TRUE or FALSE"
+		throw "Illegal argument, should be one of TRUE or FALSE";
 	}
 
 	this.toString = function(){
 		return b ? 'TRUE' : 'FALSE';
-	}
+	};
 
 	this.valueOf = function(){
 		return b;
-	}
+	};
 
 	this.toBool = function(){
 		return !!b;
-	}
-}
+	};
+};
 
 Parser.Bool.TRUE = new Parser.Bool('TRUE');
 Parser.Bool.FALSE = new Parser.Bool('FALSE');
@@ -798,8 +802,8 @@ Parser.Error = function(err){
 	this.err = err;
 	this.toString = function(){
 		return this.err;
-	}
-}
+	};
+};
 
 Parser.Error.NULL = new Parser.Error('#NULL');
 Parser.Error.DIVZERO = new Parser.Error('#DIV/0!');
@@ -850,13 +854,13 @@ Parser.fn = {
 	concat: function(a, b) {
 		return (''+a)+(''+b);
 	},
-	lt: function(a, b) {		
+	lt: function(a, b) {
 		if(a < b) return Parser.Bool.TRUE;
 		return Parser.Bool.FALSE;
 	},
-	le: function(a, b) {	
+	le: function(a, b) {
 		if(a <= b) return Parser.Bool.TRUE;
-		return Parser.Bool.FALSE;		
+		return Parser.Bool.FALSE;
 	},
 	eq: function(a, b) {
 		if(a == b) return Parser.Bool.TRUE;
@@ -864,7 +868,7 @@ Parser.fn = {
 	},
 	ge: function(a, b) {
 		if(a >= b) return Parser.Bool.TRUE;
-		return Parser.Bool.FALSE;		
+		return Parser.Bool.FALSE;
 	},
 	gt: function(a, b) {
 		if(a > b) return Parser.Bool.TRUE;
@@ -878,13 +882,13 @@ Parser.fn = {
 		return a + " " + b;
 	},
 	list: function(a, b) {
-		if(Array.isArray(a) && Array.isArray(b)) {
+		if(a instanceof Array && b instanceof Array) {
 			a.push.apply(b);
 			return a;
-		} else if(Array.isArray(a)) {
+		} else if(a instanceof Array) {
 			a.push(b);
 			return a;
-		} else if(Array.isArray(b)) {
+		} else if(b instanceof Array) {
 			b.unshift(a);
 			return b;
 		}
@@ -895,7 +899,7 @@ Parser.fn = {
 		return str.indexOf(s) === 0;
 	},
 	isString: function(v){
-		return v instanceof Parser.String;	
+		return v instanceof Parser.String;
 	},
 	isRef: function(v){
 		return v instanceof Parser.Ref;
@@ -908,49 +912,49 @@ Parser.fn = {
 	},
 	//Returns true if the value is a true number.
 	isNumber: function(v){
-		if(v == null) return false;
+		if(v === undefined || v === null) return false;
 		if(this.isString(v)) return false;
 		if(this.isBool(v)) return false;
-		if(this.isError(v)) return false;		
+		if(this.isError(v)) return false;
 
 		if(this.isRef(v)){
 			return v.isNumber();
 		}
 
-		if (typeof(v) === "number") return true;		
+		if (typeof(v) === "number") return true;
 		if (typeof(v) === "object" && typeof(v.valueOf()) === "number"){
 			return true;
 		}
-		
+
 		return false;
 	},
 	//Returns true if the value seems to be a number
 	isNumeric:function(v){
-		if(v == null) return false;
+		if(v === undefined || v === null) return false;
 		if(this.isString(v)){
 			return v.isNumeric();
 		}
 		if(this.isBool(v)) return false;
-		if(this.isError(v)) return false;		
+		if(this.isError(v)) return false;
 
 		if(this.isRef(v)){
 			return v.isNumeric();
 		}
-	
+
 		if (typeof(v) === "object"){
 			return this.isNumeric(v.valueOf());
 		}
-		
+
 		return false;
 	},
 	isArray: function(v){
-		return Array.isArray(v) && v.isArray === true;
+		return v instanceof Array && v.isArray === true;
 	},
 	isRange: function(v){
-		return Array.isArray(v) && v.isRange === true;
+		return v instanceof Array && v.isRange === true;
 	},
 	isArgList: function(v){
-		return Array.isArray(v) && v.isArgList === true;
+		return v instanceof Array && v.isArgList === true;
 	},
 	contains: function(str,s){
 		return str.indexOf(s) !== -1;
@@ -1021,13 +1025,13 @@ Parser.fn = {
 		var filteredVals = [];
 		while(a.length > 0){
 			var val = a.shift();
-			if(this.isNumber(val) || this.isBool(val) || Array.isArray(val)){
+			if(this.isNumber(val) || this.isBool(val) || val instanceof Array){
 				filteredVals.push(val);
 			}else if(this.isRef(val)){
 				if(this.isNumeric(val)){
 					filteredVals.push(val);
 				}
-			}else if(val != null && !isNaN(val)){
+			}else if(val !== null && !isNaN(val)){
 				filteredVals.push(parseFloat(val));
 			}else{
 				return Parser.Error.VALUE;
@@ -1045,7 +1049,7 @@ Parser.fn = {
 		}
 
 		for(var x = 0; x < a.length; x++){
-			if(Array.isArray(a[x])){
+			if(a[x] instanceof Array){
 				length += a[x].length;
 			}else{
 				length++;
@@ -1173,8 +1177,8 @@ Parser.fn = {
 	},
 	"COUNT": function() {
 		var a = Array.prototype.slice.call(arguments);
-		var count = 0;	
-		for(var x = 0; x < a.length; x++) {				
+		var count = 0;
+		for(var x = 0; x < a.length; x++) {
 			var v = a[x];
 			if(this.isRange(v)){
 				for(var i = 0; i < v.length; i++){
@@ -1200,8 +1204,8 @@ Parser.fn = {
 		var count = 0;
 		for(var x = 0; x < range.length; x++){
 			var cell = range[x];
-			if(this.isRef(criteria) || 
-				this.isBool(criteria) || 
+			if(this.isRef(criteria) ||
+				this.isBool(criteria) ||
 				this.isString(criteria)){
 				criteria = criteria.valueOf();
 			}
@@ -1214,18 +1218,18 @@ Parser.fn = {
 				var containsWildcards = false;
 				if(this.contains(criteria,'*')){
 					containsWildcards = true;
-					criteria = criteria.split('~*')
+					criteria = criteria.split('~*');
 					for(var i = 0; i < criteria.length; i++){
-						criteria[i] = criteria[i].replace(/\*/g,'.*');	
+						criteria[i] = criteria[i].replace(/\*/g,'.*');
 					}
-					criteria = criteria.join(this.escapeRegexSpecials('*'));					
+					criteria = criteria.join(this.escapeRegexSpecials('*'));
 				}
 
 				if(this.contains(criteria,'?')){
 					containsWildcards = true;
-					criteria = criteria.split('~?')
-					for(var i = 0; i < criteria.length; i++){
-						criteria[i] = criteria[i].replace(/\?/g,'.');	
+					criteria = criteria.split('~?');
+					for(var j = 0; j < criteria.length; j++){
+						criteria[j] = criteria[j].replace(/\?/g,'.');
 					}
 					criteria = criteria.join(this.escapeRegexSpecials('?'));
 				}
@@ -1243,13 +1247,13 @@ Parser.fn = {
 				}else if(this.startsWith(criteria,'>=')){
 					if(cell >= this.getNumberOrString(criteria.substring(2))) count++;
 				}else if(this.startsWith(criteria,'<=')){
-					if(cell <= this.getNumberOrString(criteria.substring(2))) count++;			
+					if(cell <= this.getNumberOrString(criteria.substring(2))) count++;
 				}else if(this.startsWith(criteria,'>')){
 					if(cell > this.getNumberOrString(criteria.substring(1))) count++;
 				}else if(this.startsWith(criteria,'<')){
 					if(cell < this.getNumberOrString(criteria.substring(1))) count++;
 				}
-			
+
 			}else if(criteria instanceof RegExp){
 				if(criteria.test(cell)) count++;
 			}
@@ -1829,7 +1833,7 @@ Parser.fn = {
 	"PERCENTILE": function(array,P) {
 		if(!this.isNumber(P)) return Error.VALUE;
 		if(P > 1 || P < 0) return Error.NUM;
-		
+
 		if(this.isRange(array)){
 			var a = array;
 			array = [];
@@ -1839,7 +1843,7 @@ Parser.fn = {
 		}
 		array.sort();
 		var N = array.length;
-		var n = (N - 1) * P + 1;		
+		var n = (N - 1) * P + 1;
 		if (k === 1){
 			return array[0];
 		}else if(k === N){
@@ -2066,18 +2070,18 @@ Parser.fn = {
 	"SUM": function() {
 		var a = Array.prototype.slice.call(arguments);
 		var sum = 0;
-		for(var x = 0; x < a.length; x++) {			
+		for(var x = 0; x < a.length; x++) {
 			if(this.isError(a[x])){
 				return a[x];
 			}
 
-			if(this.isNumber(a[x]) || this.isBool(a[x])) {					
+			if(this.isNumber(a[x]) || this.isBool(a[x])) {
 				sum += a[x];
 			}else if (this.isRef(a[x])){
 				if(this.isNumeric(a[x])){
 					sum += parseFloat(a[x]);
-				}			
-			}else if(Array.isArray(a[x])){
+				}
+			}else if(a[x] instanceof Array){
 				sum += this.SUM.apply(this,a[x]);
 			}else if (!isNaN(a[x])){
 				sum += parseFloat(a[x]);
@@ -2265,13 +2269,13 @@ Parser.fn = {
 		if(this.isError(v)){
 			return Parser.Bool.TRUE;
 		}
-		return Parser.Bool.FALSE;		
+		return Parser.Bool.FALSE;
 	},
 	"ISLOGICAL": function() {
 		if(this.isBool(v)){
 			return Parser.Bool.TRUE;
 		}
-		return Parser.Bool.FALSE;	
+		return Parser.Bool.FALSE;
 	},
 	"ISNA": function() {
 		throw "not implemented";
@@ -2281,20 +2285,20 @@ Parser.fn = {
 	},
 	"ISNUMBER": function(value) {
 		if(this.isNumber(value)){
-			return Parser.Bool.TRUE;	
+			return Parser.Bool.TRUE;
 		}
-		return Parser.Bool.FALSE;	
+		return Parser.Bool.FALSE;
 	},
 	"ISREF": function(v) {
 		if(this.isRef(v)){
 			return Parser.Bool.TRUE;
 		}
-		return Parser.Bool.FALSE;	
+		return Parser.Bool.FALSE;
 	},
 	"ISTEXT	": function(v) {
 		if(this.isString(v)){
 			return Parser.Bool.TRUE;
 		}
-		return Parser.Bool.FALSE;	
-	},
-}
+		return Parser.Bool.FALSE;
+	}
+};

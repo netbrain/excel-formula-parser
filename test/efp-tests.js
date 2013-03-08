@@ -1,6 +1,6 @@
 var p;
 var TRUE = Parser.Bool.TRUE;
-var FALSE = Parser.Bool.FALSE;  
+var FALSE = Parser.Bool.FALSE;
 
 QUnit.testStart = function (name) {
   p = Parser.newInstance();
@@ -21,8 +21,8 @@ test( "lex tNum", function() {
   equal(p.parse("1"), 1);
   equal(p.parse("10"),10);
   equal(p.parse("-10"),-10);
-  equal(p.parse("+10"),10);  
-  equal(p.parse("1.121"),1.121);    
+  equal(p.parse("+10"),10);
+  equal(p.parse("1.121"),1.121);
 });
 
 
@@ -51,7 +51,7 @@ test( "lex tSub", function() {
 
 test( "lex tMul", function() {
   equal(p.parse("3*2"), 6);
-  equal(p.parse("1+3*2"), 7);  
+  equal(p.parse("1+3*2"), 7);
   equal(p.parse("3*2+1"), 7);
 });
 
@@ -76,9 +76,8 @@ test( "lex tConcat", function() {
   deepEqual(p.parse('1&'), Parser.Error.VALUE);
   deepEqual(p.parse('&1'), Parser.Error.VALUE);
   equal(p.parse('SUM(1,2)&3'), "33");
-  deepEqual(p.parse('A1&3'), "3"); 
+  deepEqual(p.parse('A1&3'), "3");
 });
-
 test( "lex tLT", function() {
   deepEqual(p.parse('2<4'), TRUE);
   deepEqual(p.parse('4<2'), FALSE);
@@ -86,9 +85,8 @@ test( "lex tLT", function() {
   deepEqual(p.parse('1<'), Parser.Error.VALUE);
   deepEqual(p.parse('<1'), Parser.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)<3'), FALSE);
-  deepEqual(p.parse('A1<3'), TRUE);  
+  deepEqual(p.parse('A1<3'), TRUE);
 });
-
 test( "lex tLE", function() {
   deepEqual(p.parse('2<=4'), TRUE);
   deepEqual(p.parse('4<=2'), FALSE);
@@ -97,7 +95,7 @@ test( "lex tLE", function() {
   deepEqual(p.parse('1<='), Parser.Error.VALUE);
   deepEqual(p.parse('<=1'), Parser.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)<=3'), TRUE);
-  deepEqual(p.parse('A1<=3'), TRUE);    
+  deepEqual(p.parse('A1<=3'), TRUE);
 });
 
 test( "lex tEQ", function() {
@@ -119,7 +117,7 @@ test( "lex tGE", function() {
   deepEqual(p.parse('1>='), Parser.Error.VALUE);
   deepEqual(p.parse('>=1'), Parser.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)>=3'), TRUE);
-  deepEqual(p.parse('A1>=3'), FALSE);  
+  deepEqual(p.parse('A1>=3'), FALSE);
 });
 
 test( "lex tGT", function() {
@@ -129,7 +127,7 @@ test( "lex tGT", function() {
   deepEqual(p.parse('1>'), Parser.Error.VALUE);
   deepEqual(p.parse('>1'), Parser.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)>3'), FALSE);
-  deepEqual(p.parse('A1>3'), FALSE);  
+  deepEqual(p.parse('A1>3'), FALSE);
 });
 
 test( "lex tNE", function() {
@@ -140,7 +138,7 @@ test( "lex tNE", function() {
   deepEqual(p.parse('1<>'), Parser.Error.VALUE);
   deepEqual(p.parse('<>1'), Parser.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)<>3'), FALSE);
-  deepEqual(p.parse('A1<>3'), TRUE);    
+  deepEqual(p.parse('A1<>3'), TRUE);
 });
 
 test( "lex tRef", function() {
@@ -149,13 +147,13 @@ test( "lex tRef", function() {
     B1:2,
     C1:'"STRING"',
     D1:'SUM(1,2)',
-    E1:'SUM(A1,B1)',
+    E1:'SUM(A1,B1)'
   });
   deepEqual(p.parse('A1').valueOf(), 1);
-  deepEqual(p.parse('B1').valueOf(), 2);  
-  deepEqual(p.parse('C1').valueOf(), "STRING");  
-  deepEqual(p.parse('D1').valueOf(), 3);  
-  deepEqual(p.parse('E1').valueOf(), 3);  
+  deepEqual(p.parse('B1').valueOf(), 2);
+  deepEqual(p.parse('C1').valueOf(), "STRING");
+  deepEqual(p.parse('D1').valueOf(), 3);
+  deepEqual(p.parse('E1').valueOf(), 3);
   deepEqual(p.parse('E3').valueOf(), null);
 });
 
@@ -163,11 +161,11 @@ test( "lex tRef", function() {
 test( "lex tRange", function() {
     p.setData({
     A1:1,
-    A2:2,
+    A2:2
   });
   var result = p.parse('A1:A2');
   var range = result[0];
-  ok(Array.isArray(range));
+  ok(range instanceof Array);
   ok(range.isRange);
   ok(range.length === 2);
 
@@ -234,25 +232,25 @@ test("isNumeric test",function(){
     valueOf: function(){
       return '';
     }
-  }
+  };
   ok(!Parser.fn.isNumeric(obj));
 
-})
+});
 
 test("ISNUMBER",function(){
   p.setData({
     A1:23.8,
     A2:-23.8,
     A3:0,
-    A4:'"string"',
+    A4:'"string"'
   });
   deepEqual(p.parse('ISNUMBER(A1)'),TRUE);
   deepEqual(p.parse('ISNUMBER(A2)'),TRUE);
   deepEqual(p.parse('ISNUMBER(A3)'),TRUE);
   deepEqual(p.parse('ISNUMBER(A4)'),FALSE);
   deepEqual(p.parse('ISNUMBER(5)'),TRUE);
-  deepEqual(p.parse('ISNUMBER("5")'),FALSE);  
-})
+  deepEqual(p.parse('ISNUMBER("5")'),FALSE);
+});
 
 test( "SUM",function(){
   p.setData({
@@ -289,15 +287,15 @@ test("ISREF",function(){
     A1:23.8,
     A2:-23.8,
     A3:0,
-    A4:'"string"',
+    A4:'"string"'
   });
   deepEqual(p.parse('ISREF(A1)'),TRUE);
   deepEqual(p.parse('ISREF(A2)'),TRUE);
   deepEqual(p.parse('ISREF(A3)'),TRUE);
   deepEqual(p.parse('ISREF(A4)'),TRUE);
   deepEqual(p.parse('ISREF(5)'),FALSE);
-  deepEqual(p.parse('ISREF("5")'),FALSE);  
-})
+  deepEqual(p.parse('ISREF("5")'),FALSE);
+});
 
 test("ISERR",function(){
   var fn = Parser.fn;
@@ -312,7 +310,7 @@ test("ISERR",function(){
   deepEqual(fn.ISERR(1),FALSE);
   deepEqual(fn.ISERR("ABC"),FALSE);
   deepEqual(fn.ISERR(err.NA),err.NA);
-})
+});
 
 
 test("ISERROR",function(){
@@ -328,7 +326,7 @@ test("ISERROR",function(){
   deepEqual(fn.ISERROR(1),FALSE);
   deepEqual(fn.ISERROR("ABC"),FALSE);
   deepEqual(fn.ISERROR(err.NA),TRUE);
-})
+});
 
 test("AVERAGE",function(){
   p.setData({
@@ -337,7 +335,7 @@ test("AVERAGE",function(){
     A3:9,
     A4:6,
     A5:10,
-    A6:null,
+    A6:null
   });
   equal(p.parse('AVERAGE(A1:A5)'),8);
   equal(p.parse('AVERAGE(8,7,9,6,10)'),8);
@@ -346,7 +344,7 @@ test("AVERAGE",function(){
   equal(p.parse('AVERAGE(TRUE,FALSE,TRUE)'),2/3);
   deepEqual(p.parse('AVERAGE("TEXT",1)'),Parser.Error.VALUE);
   equal(p.parse('AVERAGE(A6,1)'),1);
-})
+});
 
 
 test("COUNTIF",function(){
@@ -382,12 +380,12 @@ test("COUNTIF",function(){
   equal(p.parse('COUNTIF(B2:B8,TRUE)'),1);
   equal(p.parse('COUNTIF(B2:B8,FALSE)'),2);
   equal(p.parse('COUNTIF(A2:A5,"*es")'),4);
-  equal(p.parse('COUNTIF(A2:A5,"a???es")'),2)
+  equal(p.parse('COUNTIF(A2:A5,"a???es")'),2);
   equal(p.parse('COUNTIF(C2:C4,"~?A~?B~?C")'),1);
   equal(p.parse('COUNTIF(C2:C4,"~*~*~*ABC")'),1);
   equal(p.parse('COUNTIF(C2:C4,"<>ABC")'),2);
 
-})
+});
 
 test("COUNT",function(){
   p.setData({
@@ -413,7 +411,7 @@ test("PERCENTILE",function(){
     A3:6,
     A4:4,
     A5:3,
-    A6:5,
+    A6:5
   });
 
   equal(p.parse('PERCENTILE(A1:A6,0.2)'),2);
@@ -422,12 +420,12 @@ test("PERCENTILE",function(){
   deepEqual(p.parse('PERCENTILE(A1:A6,2)'),Error.NUM);
   deepEqual(p.parse('PERCENTILE(A1:A6,"text")'),Error.VALUE);
 
-})
+});
 
 test("RANDBETWEEN",function(){
   p.setData({
     A1:1,
-    A2:10,
+    A2:10
   });
 
   var rand;
@@ -438,4 +436,4 @@ test("RANDBETWEEN",function(){
   rand = p.parse('RANDBETWEEN(A2-A1,SUM(A1,A2))');
   ok(rand >= 9 && rand <= 11);
 
-})
+});
