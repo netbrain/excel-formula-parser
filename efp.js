@@ -23,7 +23,7 @@ var Parser = (function() {
 		FUNC: 19,
 		BOOL: 22,
 		PAR:25,
-		ARR:26,
+		ARR:26
 	};
 
 	function Lex(input) {
