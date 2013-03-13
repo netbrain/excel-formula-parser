@@ -1,10 +1,17 @@
 var p;
-var TRUE = Parser.Bool.TRUE;
-var FALSE = Parser.Bool.FALSE;
+var TRUE = EFP.Bool.TRUE;
+var FALSE = EFP.Bool.FALSE;
 
 QUnit.testStart = function (name) {
-  p = Parser.newInstance();
+  ok(EFP !== undefined);
+  p = EFP.newInstance();
 };
+
+test( "bootstrap", function() {
+  ok(p !== undefined);
+  ok(TRUE !== undefined);
+  ok(FALSE !== undefined);
+});
 
 test( "lex whitespace", function() {
   equal(p.parse('2* 3'), 6);
@@ -72,18 +79,18 @@ test( "lex tConcat", function() {
   equal(p.parse('"ABC"&"DEF"'), "ABCDEF");
   equal(p.parse('8&"DEF"'), "8DEF");
   equal(p.parse('8&9'), "89");
-  deepEqual(p.parse('&'), Parser.Error.VALUE);
-  deepEqual(p.parse('1&'), Parser.Error.VALUE);
-  deepEqual(p.parse('&1'), Parser.Error.VALUE);
+  deepEqual(p.parse('&'), EFP.Error.VALUE);
+  deepEqual(p.parse('1&'), EFP.Error.VALUE);
+  deepEqual(p.parse('&1'), EFP.Error.VALUE);
   equal(p.parse('SUM(1,2)&3'), "33");
   deepEqual(p.parse('A1&3'), "3");
 });
 test( "lex tLT", function() {
   deepEqual(p.parse('2<4'), TRUE);
   deepEqual(p.parse('4<2'), FALSE);
-  deepEqual(p.parse('<'), Parser.Error.VALUE);
-  deepEqual(p.parse('1<'), Parser.Error.VALUE);
-  deepEqual(p.parse('<1'), Parser.Error.VALUE);
+  deepEqual(p.parse('<'), EFP.Error.VALUE);
+  deepEqual(p.parse('1<'), EFP.Error.VALUE);
+  deepEqual(p.parse('<1'), EFP.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)<3'), FALSE);
   deepEqual(p.parse('A1<3'), TRUE);
 });
@@ -91,9 +98,9 @@ test( "lex tLE", function() {
   deepEqual(p.parse('2<=4'), TRUE);
   deepEqual(p.parse('4<=2'), FALSE);
   deepEqual(p.parse('3<=3'), TRUE);
-  deepEqual(p.parse('<='), Parser.Error.VALUE);
-  deepEqual(p.parse('1<='), Parser.Error.VALUE);
-  deepEqual(p.parse('<=1'), Parser.Error.VALUE);
+  deepEqual(p.parse('<='), EFP.Error.VALUE);
+  deepEqual(p.parse('1<='), EFP.Error.VALUE);
+  deepEqual(p.parse('<=1'), EFP.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)<=3'), TRUE);
   deepEqual(p.parse('A1<=3'), TRUE);
 });
@@ -102,9 +109,9 @@ test( "lex tEQ", function() {
   deepEqual(p.parse('2=4'), FALSE);
   deepEqual(p.parse('4=2'), FALSE);
   deepEqual(p.parse('3=3'), TRUE);
-  deepEqual(p.parse('=='), Parser.Error.VALUE);
-  deepEqual(p.parse('=1='), Parser.Error.VALUE);
-  deepEqual(p.parse('==1'), Parser.Error.VALUE);
+  deepEqual(p.parse('=='), EFP.Error.VALUE);
+  deepEqual(p.parse('=1='), EFP.Error.VALUE);
+  deepEqual(p.parse('==1'), EFP.Error.VALUE);
   deepEqual(p.parse('=SUM(1,2)=3'), TRUE);
   deepEqual(p.parse('=A1=3'), FALSE);
 });
@@ -113,9 +120,9 @@ test( "lex tGE", function() {
   deepEqual(p.parse('2>=4'), FALSE);
   deepEqual(p.parse('4>=2'), TRUE);
   deepEqual(p.parse('3>=3'), TRUE);
-  deepEqual(p.parse('>='), Parser.Error.VALUE);
-  deepEqual(p.parse('1>='), Parser.Error.VALUE);
-  deepEqual(p.parse('>=1'), Parser.Error.VALUE);
+  deepEqual(p.parse('>='), EFP.Error.VALUE);
+  deepEqual(p.parse('1>='), EFP.Error.VALUE);
+  deepEqual(p.parse('>=1'), EFP.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)>=3'), TRUE);
   deepEqual(p.parse('A1>=3'), FALSE);
 });
@@ -123,9 +130,9 @@ test( "lex tGE", function() {
 test( "lex tGT", function() {
   deepEqual(p.parse('2>4'), FALSE);
   deepEqual(p.parse('4>2'), TRUE);
-  deepEqual(p.parse('>'), Parser.Error.VALUE);
-  deepEqual(p.parse('1>'), Parser.Error.VALUE);
-  deepEqual(p.parse('>1'), Parser.Error.VALUE);
+  deepEqual(p.parse('>'), EFP.Error.VALUE);
+  deepEqual(p.parse('1>'), EFP.Error.VALUE);
+  deepEqual(p.parse('>1'), EFP.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)>3'), FALSE);
   deepEqual(p.parse('A1>3'), FALSE);
 });
@@ -134,9 +141,9 @@ test( "lex tNE", function() {
   deepEqual(p.parse('2<>4'), TRUE);
   deepEqual(p.parse('4<>2'), TRUE);
   deepEqual(p.parse('3<>3'), FALSE);
-  deepEqual(p.parse('<>'), Parser.Error.VALUE);
-  deepEqual(p.parse('1<>'), Parser.Error.VALUE);
-  deepEqual(p.parse('<>1'), Parser.Error.VALUE);
+  deepEqual(p.parse('<>'), EFP.Error.VALUE);
+  deepEqual(p.parse('1<>'), EFP.Error.VALUE);
+  deepEqual(p.parse('<>1'), EFP.Error.VALUE);
   deepEqual(p.parse('SUM(1,2)<>3'), FALSE);
   deepEqual(p.parse('A1<>3'), TRUE);
 });
@@ -219,21 +226,21 @@ test( "lex tBool", function() {
 });
 
 test("isNumeric test",function(){
-  ok(!Parser.fn.isNumeric(p.parse('""')));
-  ok(Parser.fn.isNumeric(p.parse('"1"')));
-  ok(Parser.fn.isNumeric(p.parse('"   1.12039  "')));
-  ok(!Parser.fn.isNumeric(p.parse('"   1.12039 abc "')));
-  ok(!Parser.fn.isNumeric(null));
-  ok(!Parser.fn.isNumeric(TRUE));
-  ok(!Parser.fn.isNumeric(FALSE));
-  ok(!Parser.fn.isNumeric(Parser.Error.VALUE));
+  ok(!EFP.fn.isNumeric(p.parse('""')));
+  ok(EFP.fn.isNumeric(p.parse('"1"')));
+  ok(EFP.fn.isNumeric(p.parse('"   1.12039  "')));
+  ok(!EFP.fn.isNumeric(p.parse('"   1.12039 abc "')));
+  ok(!EFP.fn.isNumeric(null));
+  ok(!EFP.fn.isNumeric(TRUE));
+  ok(!EFP.fn.isNumeric(FALSE));
+  ok(!EFP.fn.isNumeric(EFP.Error.VALUE));
 
   var obj = {
     valueOf: function(){
       return '';
     }
   };
-  ok(!Parser.fn.isNumeric(obj));
+  ok(!EFP.fn.isNumeric(obj));
 
 });
 
@@ -272,8 +279,8 @@ test( "SUM",function(){
   equal(p.parse('SUM(A1,A2,A3,"8","9")'),35);
   equal(p.parse('SUM({5,6,7},8,9)'),35);
   equal(p.parse('SUM(TRUE,FALSE,TRUE)'),2);
-  deepEqual(p.parse('SUM(1,1/0)'),Parser.Error.DIVZERO);
-  deepEqual(p.parse('SUM("NaN",1)'),Parser.Error.VALUE);
+  deepEqual(p.parse('SUM(1,1/0)'),EFP.Error.DIVZERO);
+  deepEqual(p.parse('SUM("NaN",1)'),EFP.Error.VALUE);
   equal(p.parse('SUM(A6,A7,2)'),3);
   equal(p.parse('SUM(B1)'),0);
   equal(p.parse('SUM(A8:B8)'),1);
@@ -298,8 +305,8 @@ test("ISREF",function(){
 });
 
 test("ISERR",function(){
-  var fn = Parser.fn;
-  var err = Parser.Error;
+  var fn = EFP.fn;
+  var err = EFP.Error;
 
   deepEqual(fn.ISERR(err.NULL),TRUE);
   deepEqual(fn.ISERR(err.DIVZERO),TRUE);
@@ -314,8 +321,8 @@ test("ISERR",function(){
 
 
 test("ISERROR",function(){
-  var fn = Parser.fn;
-  var err = Parser.Error;
+  var fn = EFP.fn;
+  var err = EFP.Error;
 
   deepEqual(fn.ISERROR(err.NULL),TRUE);
   deepEqual(fn.ISERROR(err.DIVZERO),TRUE);
@@ -342,7 +349,7 @@ test("AVERAGE",function(){
   equal(p.parse('AVERAGE(A1,A2,A3,A4,A5)'),8);
   equal(p.parse('AVERAGE(A1:A3,{6,10})'),8);
   equal(p.parse('AVERAGE(TRUE,FALSE,TRUE)'),2/3);
-  deepEqual(p.parse('AVERAGE("TEXT",1)'),Parser.Error.VALUE);
+  deepEqual(p.parse('AVERAGE("TEXT",1)'),EFP.Error.VALUE);
   equal(p.parse('AVERAGE(A6,1)'),1);
 });
 
