@@ -161,7 +161,7 @@ test( "lex tRef", function() {
   deepEqual(p.parse('C1').valueOf(), "STRING");
   deepEqual(p.parse('D1').valueOf(), 3);
   deepEqual(p.parse('E1').valueOf(), 3);
-  deepEqual(p.parse('E3').valueOf(), null);
+  deepEqual(p.parse('E3').valueOf(), undefined);
 });
 
 

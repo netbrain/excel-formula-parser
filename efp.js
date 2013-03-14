@@ -718,7 +718,7 @@ var EFP = (function() {
 	EFP.Ref = function(pos, value, fnObj) {
 		this.valueOf = function() {
 			var value = this.referenceValue();
-			while(value !== null && typeof(value) === "object"){
+			while(value && typeof(value) === "object"){
 				value = value.valueOf();
 			}
 			return value;
@@ -743,8 +743,8 @@ var EFP = (function() {
 		};
 
 		this.referenceValue = function(){
-			if(this.value === null){
-				return null;
+			if(!this.value){
+				return;
 			}
 			if(typeof(this.value) === "number") {
 				return this.value;
