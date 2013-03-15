@@ -744,7 +744,7 @@ var EFP = (function() {
 
 		this.referenceValue = function(){
 			if(!this.value){
-				return;
+				return null;
 			}
 			if(typeof(this.value) === "number") {
 				return this.value;
