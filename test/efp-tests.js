@@ -1,6 +1,4 @@
 var p;
-var TRUE = EFP.Bool.TRUE;
-var FALSE = EFP.Bool.FALSE;
 
 QUnit.testStart = function (name) {
   ok(EFP !== undefined);
@@ -9,8 +7,6 @@ QUnit.testStart = function (name) {
 
 test( "bootstrap", function() {
   ok(p !== undefined);
-  ok(TRUE !== undefined);
-  ok(FALSE !== undefined);
 });
 
 test( "lex whitespace", function() {
@@ -86,66 +82,70 @@ test( "lex tConcat", function() {
   deepEqual(p.parse('A1&3'), "3");
 });
 test( "lex tLT", function() {
-  deepEqual(p.parse('2<4'), TRUE);
-  deepEqual(p.parse('4<2'), FALSE);
+  deepEqual(p.parse('2<4').toBool(), true);
+  deepEqual(p.parse('4<2').toBool(), false);
   deepEqual(p.parse('<'), EFP.Error.VALUE);
   deepEqual(p.parse('1<'), EFP.Error.VALUE);
   deepEqual(p.parse('<1'), EFP.Error.VALUE);
-  deepEqual(p.parse('SUM(1,2)<3'), FALSE);
-  deepEqual(p.parse('A1<3'), TRUE);
+  deepEqual(p.parse('SUM(1,2)<3').toBool(), false);
+  deepEqual(p.parse('A1<3').toBool(), true);
 });
 test( "lex tLE", function() {
-  deepEqual(p.parse('2<=4'), TRUE);
-  deepEqual(p.parse('4<=2'), FALSE);
-  deepEqual(p.parse('3<=3'), TRUE);
+  deepEqual(p.parse('2<=4').toBool(), true);
+  deepEqual(p.parse('4<=2').toBool(), false);
+  deepEqual(p.parse('3<=3').toBool(), true);
   deepEqual(p.parse('<='), EFP.Error.VALUE);
   deepEqual(p.parse('1<='), EFP.Error.VALUE);
   deepEqual(p.parse('<=1'), EFP.Error.VALUE);
-  deepEqual(p.parse('SUM(1,2)<=3'), TRUE);
-  deepEqual(p.parse('A1<=3'), TRUE);
+  deepEqual(p.parse('SUM(1,2)<=3').toBool(), true);
+  deepEqual(p.parse('A1<=3').toBool(), true);
 });
 
 test( "lex tEQ", function() {
-  deepEqual(p.parse('2=4'), FALSE);
-  deepEqual(p.parse('4=2'), FALSE);
-  deepEqual(p.parse('3=3'), TRUE);
+  p.setData({
+    A1:3
+  });
+  deepEqual(p.parse('2=4').toBool(), false);
+  deepEqual(p.parse('4=2').toBool(), false);
+  deepEqual(p.parse('3=3').toBool(), true);
   deepEqual(p.parse('=='), EFP.Error.VALUE);
   deepEqual(p.parse('=1='), EFP.Error.VALUE);
   deepEqual(p.parse('==1'), EFP.Error.VALUE);
-  deepEqual(p.parse('=SUM(1,2)=3'), TRUE);
-  deepEqual(p.parse('=A1=3'), FALSE);
+  deepEqual(p.parse('=SUM(1,2)=3').toBool(), true);
+  equal(p.parse('=A1=3').toBool(), true);
+  equal(p.parse('=A1=2').toBool(), false);
 });
 
 test( "lex tGE", function() {
-  deepEqual(p.parse('2>=4'), FALSE);
-  deepEqual(p.parse('4>=2'), TRUE);
-  deepEqual(p.parse('3>=3'), TRUE);
+  deepEqual(p.parse('2>=4').toBool(), false);
+  deepEqual(p.parse('4>=2').toBool(), true);
+  deepEqual(p.parse('3>=3').toBool(), true);
   deepEqual(p.parse('>='), EFP.Error.VALUE);
   deepEqual(p.parse('1>='), EFP.Error.VALUE);
   deepEqual(p.parse('>=1'), EFP.Error.VALUE);
-  deepEqual(p.parse('SUM(1,2)>=3'), TRUE);
-  deepEqual(p.parse('A1>=3'), FALSE);
+  deepEqual(p.parse('SUM(1,2)>=3').toBool(), true);
+  deepEqual(p.parse('A1>=3').toBool(), false);
 });
 
 test( "lex tGT", function() {
-  deepEqual(p.parse('2>4'), FALSE);
-  deepEqual(p.parse('4>2'), TRUE);
+  deepEqual(p.parse('2>4').toBool(), false);
+  deepEqual(p.parse('4>2').toBool(), true);
   deepEqual(p.parse('>'), EFP.Error.VALUE);
   deepEqual(p.parse('1>'), EFP.Error.VALUE);
   deepEqual(p.parse('>1'), EFP.Error.VALUE);
-  deepEqual(p.parse('SUM(1,2)>3'), FALSE);
-  deepEqual(p.parse('A1>3'), FALSE);
+  deepEqual(p.parse('SUM(1,2)>3').toBool(), false);
+  deepEqual(p.parse('A1>3').toBool(), false);
 });
 
 test( "lex tNE", function() {
-  deepEqual(p.parse('2<>4'), TRUE);
-  deepEqual(p.parse('4<>2'), TRUE);
-  deepEqual(p.parse('3<>3'), FALSE);
+  deepEqual(p.parse('2<>4').toBool(), true);
+  deepEqual(p.parse('4<>2').toBool(), true);
+  deepEqual(p.parse('3<>3').toBool(), false);
   deepEqual(p.parse('<>'), EFP.Error.VALUE);
   deepEqual(p.parse('1<>'), EFP.Error.VALUE);
   deepEqual(p.parse('<>1'), EFP.Error.VALUE);
-  deepEqual(p.parse('SUM(1,2)<>3'), FALSE);
-  deepEqual(p.parse('A1<>3'), TRUE);
+  deepEqual(p.parse('SUM(1,2)<>3').toBool(), false);
+  deepEqual(p.parse('A1<>3').toBool(), true);
 });
 
 test( "lex tRef", function() {
@@ -221,8 +221,8 @@ test( "lex tArray", function() {
 });
 
 test( "lex tBool", function() {
-  deepEqual(p.parse('TRUE'),TRUE);
-  deepEqual(p.parse('FALSE'),FALSE);
+  deepEqual(p.parse('TRUE').toBool(),true);
+  deepEqual(p.parse('FALSE').toBool(),false);
 });
 
 test("isNumeric test",function(){
@@ -231,8 +231,8 @@ test("isNumeric test",function(){
   ok(EFP.fn.isNumeric(p.parse('"   1.12039  "')));
   ok(!EFP.fn.isNumeric(p.parse('"   1.12039 abc "')));
   ok(!EFP.fn.isNumeric(null));
-  ok(!EFP.fn.isNumeric(TRUE));
-  ok(!EFP.fn.isNumeric(FALSE));
+  ok(!EFP.fn.isNumeric(EFP.Bool.TRUE));
+  ok(!EFP.fn.isNumeric(EFP.Bool.FALSE));
   ok(!EFP.fn.isNumeric(EFP.Error.VALUE));
 
   var obj = {
@@ -251,12 +251,12 @@ test("ISNUMBER",function(){
     A3:0,
     A4:'"string"'
   });
-  deepEqual(p.parse('ISNUMBER(A1)'),TRUE);
-  deepEqual(p.parse('ISNUMBER(A2)'),TRUE);
-  deepEqual(p.parse('ISNUMBER(A3)'),TRUE);
-  deepEqual(p.parse('ISNUMBER(A4)'),FALSE);
-  deepEqual(p.parse('ISNUMBER(5)'),TRUE);
-  deepEqual(p.parse('ISNUMBER("5")'),FALSE);
+  deepEqual(p.parse('ISNUMBER(A1)').toBool(),true);
+  deepEqual(p.parse('ISNUMBER(A2)').toBool(),true);
+  deepEqual(p.parse('ISNUMBER(A3)').toBool(),true);
+  deepEqual(p.parse('ISNUMBER(A4)').toBool(),false);
+  deepEqual(p.parse('ISNUMBER(5)').toBool(),true);
+  deepEqual(p.parse('ISNUMBER("5")').toBool(),false);
 });
 
 test( "SUM",function(){
@@ -296,26 +296,26 @@ test("ISREF",function(){
     A3:0,
     A4:'"string"'
   });
-  deepEqual(p.parse('ISREF(A1)'),TRUE);
-  deepEqual(p.parse('ISREF(A2)'),TRUE);
-  deepEqual(p.parse('ISREF(A3)'),TRUE);
-  deepEqual(p.parse('ISREF(A4)'),TRUE);
-  deepEqual(p.parse('ISREF(5)'),FALSE);
-  deepEqual(p.parse('ISREF("5")'),FALSE);
+  deepEqual(p.parse('ISREF(A1)').toBool(),true);
+  deepEqual(p.parse('ISREF(A2)').toBool(),true);
+  deepEqual(p.parse('ISREF(A3)').toBool(),true);
+  deepEqual(p.parse('ISREF(A4)').toBool(),true);
+  deepEqual(p.parse('ISREF(5)').toBool(),false);
+  deepEqual(p.parse('ISREF("5")').toBool(),false);
 });
 
 test("ISERR",function(){
   var fn = EFP.fn;
   var err = EFP.Error;
 
-  deepEqual(fn.ISERR(err.NULL),TRUE);
-  deepEqual(fn.ISERR(err.DIVZERO),TRUE);
-  deepEqual(fn.ISERR(err.VALUE),TRUE);
-  deepEqual(fn.ISERR(err.REF),TRUE);
-  deepEqual(fn.ISERR(err.NAME),TRUE);
-  deepEqual(fn.ISERR(err.NUM),TRUE);
-  deepEqual(fn.ISERR(1),FALSE);
-  deepEqual(fn.ISERR("ABC"),FALSE);
+  deepEqual(fn.ISERR(err.NULL).toBool(),true);
+  deepEqual(fn.ISERR(err.DIVZERO).toBool(),true);
+  deepEqual(fn.ISERR(err.VALUE).toBool(),true);
+  deepEqual(fn.ISERR(err.REF).toBool(),true);
+  deepEqual(fn.ISERR(err.NAME).toBool(),true);
+  deepEqual(fn.ISERR(err.NUM).toBool(),true);
+  deepEqual(fn.ISERR(1).toBool(),false);
+  deepEqual(fn.ISERR("ABC").toBool(),false);
   deepEqual(fn.ISERR(err.NA),err.NA);
 });
 
@@ -324,15 +324,15 @@ test("ISERROR",function(){
   var fn = EFP.fn;
   var err = EFP.Error;
 
-  deepEqual(fn.ISERROR(err.NULL),TRUE);
-  deepEqual(fn.ISERROR(err.DIVZERO),TRUE);
-  deepEqual(fn.ISERROR(err.VALUE),TRUE);
-  deepEqual(fn.ISERROR(err.REF),TRUE);
-  deepEqual(fn.ISERROR(err.NAME),TRUE);
-  deepEqual(fn.ISERROR(err.NUM),TRUE);
-  deepEqual(fn.ISERROR(1),FALSE);
-  deepEqual(fn.ISERROR("ABC"),FALSE);
-  deepEqual(fn.ISERROR(err.NA),TRUE);
+  deepEqual(fn.ISERROR(err.NULL).toBool(),true);
+  deepEqual(fn.ISERROR(err.DIVZERO).toBool(),true);
+  deepEqual(fn.ISERROR(err.VALUE).toBool(),true);
+  deepEqual(fn.ISERROR(err.REF).toBool(),true);
+  deepEqual(fn.ISERROR(err.NAME).toBool(),true);
+  deepEqual(fn.ISERROR(err.NUM).toBool(),true);
+  deepEqual(fn.ISERROR(1).toBool(),false);
+  deepEqual(fn.ISERROR("ABC").toBool(),false);
+  deepEqual(fn.ISERROR(err.NA).toBool(),true);
 });
 
 test("AVERAGE",function(){
@@ -444,3 +444,24 @@ test("RANDBETWEEN",function(){
   ok(rand >= 9 && rand <= 11);
 
 });
+
+test("IF",function(){
+  p.setData({
+    A1:5,
+    B1:4,
+    A2:5,
+    B2:0
+  });
+
+ deepEqual(p.parse('IF(B1=0, "div by zero", A1/B1)').valueOf(),1.25);
+ deepEqual(p.parse('IF(B2=0, "div by zero", A2/B2)').valueOf(),'div by zero');
+ deepEqual(p.parse('IF(B2=0, IF(TRUE,A1,B1), A2/B2)').valueOf(),5);
+});
+
+
+test("LN",function(){
+ deepEqual(p.parse('LN(1)'),0);
+ deepEqual(p.parse('LN(100)'),4.605170185988092);
+ deepEqual(p.parse('LN(0.5)'),-0.6931471805599453);
+});
+

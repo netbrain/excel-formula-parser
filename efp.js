@@ -743,11 +743,11 @@ var EFP = (function() {
 		};
 
 		this.referenceValue = function(){
-			if(!this.value){
-				return null;
-			}
 			if(typeof(this.value) === "number") {
 				return this.value;
+			}
+			if(!this.value){
+				return null;
 			}
 			return fnObj.fn.call(fnObj.context, this.value, fnObj.id);
 		};
@@ -1551,8 +1551,11 @@ var EFP = (function() {
 		"HYPGEOMDIST": function() {
 			throw "not implemented";
 		},
-		"IF": function() {
-			throw "not implemented";
+		"IF": function(condition,tVal,fVal) {
+			console.log(condition.toBool())
+			console.log(tVal)
+			console.log(fVal)
+			return condition.toBool() ? tVal : fVal;
 		},
 		"IMABS": function() {
 			throw "not implemented";
@@ -1665,8 +1668,8 @@ var EFP = (function() {
 		"LINEST": function() {
 			throw "not implemented";
 		},
-		"LN": function() {
-			throw "not implemented";
+		"LN": function(number) {
+			return Math.log(number);
 		},
 		"LOG": function() {
 			throw "not implemented";
