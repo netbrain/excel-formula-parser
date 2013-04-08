@@ -465,3 +465,9 @@ test("LN",function(){
  deepEqual(p.parse('LN(0.5)'),-0.6931471805599453);
 });
 
+test("EXP", function(){
+  equal(p.parse('EXP( 100 )'),parseFloat("2.6881171418161356e+43"));
+  equal(p.parse('EXP( 0.1 )'),1.1051709180756477);
+  equal(p.parse('EXP( 0 )'),1);
+  equal(p.parse('EXP( -5 )'),0.006737946999085467);
+});

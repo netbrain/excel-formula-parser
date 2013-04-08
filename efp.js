@@ -1425,8 +1425,8 @@ var EFP = (function() {
 		"EXACT": function() {
 			throw "not implemented";
 		},
-		"EXP": function() {
-			throw "not implemented";
+		"EXP": function(x) {
+			return Math.exp(x);
 		},
 		"EXPON.DIST": function() {
 			throw "not implemented";
