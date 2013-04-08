@@ -1683,8 +1683,8 @@ var EFP = (function() {
 		"LOGNORM.DIST": function() {
 			throw "not implemented";
 		},
-		"LOGNORM.INV": function() {
-			throw "not implemented";
+		"LOGNORM.INV": function(probability,mean,stdev) {
+			return this.LOGINV(probability,mean,stdev);
 		},
 		"LOGNORMDIST": function() {
 			throw "not implemented";
