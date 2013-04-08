@@ -471,3 +471,21 @@ test("EXP", function(){
   equal(p.parse('EXP( 0 )'),1);
   equal(p.parse('EXP( -5 )'),0.006737946999085467);
 });
+
+
+test("POWER", function(){
+  equal(p.parse('POWER( 1,2 )'),1);
+  equal(p.parse('POWER( 2,2 )'),4);
+  equal(p.parse('POWER( 2,3 )'),8);
+});
+
+test("SQRT", function(){
+  p.setData({
+    A1: 5.9
+  });
+
+  equal(p.parse('SQRT( 36 )'),6);
+  equal(p.parse('SQRT( A1 )'),2.4289915602982237);
+  deepEqual(p.parse('SQRT( -1 )'),EFP.Error.NUM);
+  equal(p.parse('SQRT(POWER(2.5,2))'),2.5);
+});

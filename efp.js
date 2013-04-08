@@ -1552,9 +1552,6 @@ var EFP = (function() {
 			throw "not implemented";
 		},
 		"IF": function(condition,tVal,fVal) {
-			console.log(condition.toBool())
-			console.log(tVal)
-			console.log(fVal)
 			return condition.toBool() ? tVal : fVal;
 		},
 		"IMABS": function() {
@@ -1896,8 +1893,8 @@ var EFP = (function() {
 		"POISSON.DIST": function() {
 			throw "not implemented";
 		},
-		"POWER": function() {
-			throw "not implemented";
+		"POWER": function(n,p) {
+			return Math.pow(n,p);
 		},
 		"PPMT": function() {
 			throw "not implemented";
@@ -2046,8 +2043,12 @@ var EFP = (function() {
 		"SQL.REQUEST": function() {
 			throw "not implemented";
 		},
-		"SQRT": function() {
-			throw "not implemented";
+		"SQRT": function(number) {
+			if(number < 0){
+				return EFP.Error.NUM;
+			}
+
+			return Math.sqrt(number);
 		},
 		"SQRTPI": function() {
 			throw "not implemented";
