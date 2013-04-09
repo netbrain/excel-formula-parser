@@ -1127,8 +1127,52 @@ var EFP = (function() {
 		"CHAR": function() {
 			throw "not implemented";
 		},
-		"CHIDIST": function() {
-			throw "not implemented";
+		"CHIDIST": function(x,n) {
+			if(!(this.isNumber(x) && this.isNumber(n))){
+				return EFP.Error.VALUE;
+			}
+
+			if(x < 0){
+				return EFP.Error.NUM;
+			}
+
+			if(n % 1 !== 0){
+				n = Math.floor(n);
+			}
+
+			if(n < 1 || n >= this.POWER(10,10)){
+				return EFP.Error.NUM;
+			}
+
+			if(x>1000 | n>1000) {
+				var q=this.NORM((this.POWER(x/n,1/3)+2/(9*n)-1)/this.SQRT(2/(9*n)))/2;
+				if (x>n) {
+					return q;
+				}else{
+					return 1-q;
+				}
+			}
+
+			var p=this.EXP(-0.5*x);
+			if((n%2)==1) {
+				p=p*this.SQRT(2*x/this.PI());
+			}
+
+			var k=n;
+			while(k>=2) {
+				p=p*x/k;
+				k=k-2;
+			}
+
+			var t=p;
+			var a=n;
+
+			while(t>1e-15*p) {
+				a=a+2;
+				t=t*x/a;
+				p=p+t;
+			}
+			return (1-p);
 		},
 		"CHIINV": function() {
 			throw "not implemented";
@@ -1401,8 +1445,9 @@ var EFP = (function() {
 		"EOMONTH": function() {
 			throw "not implemented";
 		},
-		"ERF": function() {
-			throw "not implemented";
+		"ERF": function(z,n) {
+			//TODO add n (upper limit)
+			return (2*this.GAUSS(this.SQRT(2)*z));
 		},
 		"ERF.PRECISE": function() {
 			throw "not implemented";
@@ -1508,6 +1553,12 @@ var EFP = (function() {
 		},
 		"GAMMALN.PRECISE": function() {
 			throw "not implemented";
+		},
+		"GAUSS": function(z){
+			//Because NORM.S.DIST(0,True) always returns 0.5, GAUSS (z) will always be 0.5 less than NORM.S.DIST(z,True).
+			var g = ( (z<0) ? ( (z<-10) ? 0 : this.CHIDIST(z*z,1)/2 ) : ( (z>10) ? 1 : 1-this.CHIDIST(z*z,1)/2 ) );
+			g -= 0.5;
+			return g;
 		},
 		"GCD": function() {
 			throw "not implemented";
@@ -1677,8 +1728,20 @@ var EFP = (function() {
 		"LOGEST": function() {
 			throw "not implemented";
 		},
-		"LOGINV": function() {
-			throw "not implemented";
+		"LOGINV": function(probability,mean,stdev) {
+			if(!(this.isNumber(probability) && this.isNumber(mean) && this.isNumber(stdev))){
+				return EFP.Error.VALUE;
+			}
+
+			if(probability < 0 || probability > 1){
+				return EFP.Error.NUM;
+			}
+
+			if(stdev <= 0){
+				return EFP.Error.Num;
+			}
+
+			return this.POWER(Math.E,(mean+stdev*this.NORMSINV(probability)))
 		},
 		"LOGNORM.DIST": function() {
 			throw "not implemented";
@@ -1785,17 +1848,56 @@ var EFP = (function() {
 		"NORM.S.INV": function() {
 			throw "not implemented";
 		},
-		"NORMDIST": function() {
-			throw "not implemented";
+		"NORMDIST": function(x, mean, stdev, cumulative) {
+			if(!this.isBool(cumulative)){
+				return EFP.Error.VALUE;
+			}
+
+			if(cumulative.toBool()){
+				return (1/2*(1+this.ERF((x-mean)/(stdev*this.SQRT(2)))));
+			}else{
+				return ((1/(this.SQRT(2*this.PI())*stdev))*this.POWER(Math.E,(-(this.POWER(x-mean,2)/(2*this.POWER(stdev,2))))));
+			}
 		},
 		"NORMINV": function() {
 			throw "not implemented";
 		},
-		"NORMSDIST": function() {
-			throw "not implemented";
+		"NORMSDIST": function(z) {
+			return this.NORMDIST(z,0,1,this.TRUE());
 		},
-		"NORMSINV": function() {
-			throw "not implemented";
+		"NORMSINV": function(p) {
+
+			if(!this.isNumber(p)){
+				return EFP.Error.VALUE;
+			}
+
+			if(p < 0 || p > 1){
+				return EFP.Error.NUM;
+			}
+
+			var a1 = -39.6968302866538, a2 = 220.946098424521, a3 = -275.928510446969;
+			var a4 = 138.357751867269, a5 = -30.6647980661472, a6 = 2.50662827745924;
+			var b1 = -54.4760987982241, b2 = 161.585836858041, b3 = -155.698979859887;
+			var b4 = 66.8013118877197, b5 = -13.2806815528857, c1 = -7.78489400243029E-03;
+			var c2 = -0.322396458041136, c3 = -2.40075827716184, c4 = -2.54973253934373;
+			var c5 = 4.37466414146497, c6 = 2.93816398269878, d1 = 7.78469570904146E-03;
+			var d2 = 0.32246712907004, d3 = 2.445134137143, d4 = 3.75440866190742;
+			var p_low = 0.02425, p_high = 1 - p_low;
+			var q, r;
+			var retVal;
+
+			if (p < p_low){
+				q = this.SQRT(-2 * Math.log(p));
+				retVal = (((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) / ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+			} else if (p <= p_high) {
+				q = p - 0.5;
+				r = q * q;
+				retVal = (((((a1 * r + a2) * r + a3) * r + a4) * r + a5) * r + a6) * q / (((((b1 * r + b2) * r + b3) * r + b4) * r + b5) * r + 1);
+			} else {
+				q = this.SQRT(-2 * Math.log(1 - p));
+				retVal = -(((((c1 * q + c2) * q + c3) * q + c4) * q + c5) * q + c6) / ((((d1 * q + d2) * q + d3) * q + d4) * q + 1);
+			}
+			return retVal;
 		},
 		"NOT": function() {
 			throw "not implemented";
@@ -1882,7 +1984,7 @@ var EFP = (function() {
 			throw "not implemented";
 		},
 		"PI": function() {
-			throw "not implemented";
+			return Math.PI;
 		},
 		"PMT": function() {
 			throw "not implemented";
@@ -2051,7 +2153,7 @@ var EFP = (function() {
 			return Math.sqrt(number);
 		},
 		"SQRTPI": function() {
-			throw "not implemented";
+			return this.SQRT(this.PI());
 		},
 		"STANDARDIZE": function() {
 			throw "not implemented";

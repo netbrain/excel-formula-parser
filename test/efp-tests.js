@@ -489,3 +489,51 @@ test("SQRT", function(){
   deepEqual(p.parse('SQRT( -1 )'),EFP.Error.NUM);
   equal(p.parse('SQRT(POWER(2.5,2))'),2.5);
 });
+
+test("PI", function(){
+  equal(p.parse('PI()'),Math.PI);
+});
+
+test("SQRTPI", function(){
+  equal(p.parse('SQRTPI()'),Math.sqrt(Math.PI));
+});
+
+test("GAUSS", function(){
+  equal(p.parse('GAUSS(2)').toFixed(5),0.47725);
+});
+
+
+test("CHIDIST", function(){
+  equal(p.parse('CHIDIST(18.307,10)').toFixed(6),0.050001);
+});
+
+test("ERF",function(){
+  equal(p.parse('ERF(0.74500)').toFixed(5),0.70793);
+  equal(p.parse('ERF(1)').toFixed(5),0.842700);
+});
+
+test("NORMDIST", function(){
+  p.setData({
+    A1: 5.9
+  });
+
+  equal(p.parse('NORMDIST( 50, 40, 20, FALSE )').toFixed(9),0.017603266);
+  equal(p.parse('NORMDIST( 0.8, 1, 0.3, TRUE )').toFixed(9),0.252492538);
+});
+
+test("NORMSDIST", function(){
+  equal(p.parse('NORMSDIST(-1.5)').toFixed(9), 0.066807201);
+  equal(p.parse('NORMSDIST(0)'), 0.5);
+  equal(p.parse('NORMSDIST(2.3)').toFixed(9), 0.989275890);
+});
+
+
+test("NORMSINV", function(){
+  equal(p.parse('NORMSINV(0.25)').toFixed(9), -0.674489750);
+  equal(p.parse('NORMSINV(0.55)').toFixed(9), 0.125661347);
+  equal(p.parse('NORMSINV(0.9)').toFixed(9), 1.281551564);
+});
+
+test("LOGINV", function(){
+  equal(p.parse('LOGINV(0.3,2,0.2)').toFixed(9), 6.653346075);
+});
