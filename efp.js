@@ -806,6 +806,7 @@ var EFP = (function() {
 		if(i < 26) {
 			return String.fromCharCode(i + start);
 		} else {
+			var f = EFP.Ref.getColumnByIndex;
 			var n = (i) / 26 - 1;
 			return f(n) + f(i % 26);
 		}
