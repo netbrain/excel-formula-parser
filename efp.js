@@ -172,7 +172,7 @@ var EFP = (function() {
 				}
 			},
 			ref: function() {
-				if(lexer.accept("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")) {
+				if(lexer.accept("$ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")) {
 					lexer.emit(type.REF);
 				}
 			}
@@ -290,7 +290,7 @@ var EFP = (function() {
 		//TODO optimize lexer to have each
 		//lexing function return a possible
 		//next state, instead of returning to 
-		//the "unkown".
+		//the "unknown".
 		outer:
 		while(!this.isAtEndOfLine()) {
 			for(var fn in lexer.lex) {
@@ -298,7 +298,7 @@ var EFP = (function() {
 				lexer.lex[fn]();
 				if(this.pos !== pos) continue outer;
 			}
-			throw "Unknown input " + lexer.next();
+			throw "Unknown input " + lexer.next() + " in: "+ this.input;
 		}
 
 		return this.tokens;
@@ -432,19 +432,23 @@ var EFP = (function() {
 			range:  function(item,s,id,refs,data){
 				var b = s.pop();
 				var a = s.pop();
-				var range = [a];
+				var range = [];
 				range.isRange = true;
 				var mincol = Math.min(a.columnIndex, b.columnIndex);
 				var maxcol = Math.max(a.columnIndex, b.columnIndex);
-				var minrow = Math.min(a.row, b.row);
-				var maxrow = Math.max(a.row, b.row);
+				var minrow,maxrow;
+
+				if(!(b.isColumnReference() || a.isColumnReference())){
+					minrow = Math.min(a.row, b.row);
+					maxrow = Math.max(a.row, b.row);
+				}else{
+					//TODO needs optimization
+					minrow = 1;
+					maxrow = 65536;
+				}
 
 				for(var c = mincol; c <= maxcol; c++) {
 					for(var r = minrow; r <= maxrow; r++) {
-						//Skip first and last.
-						if((c === mincol && r === minrow) || (c === maxcol && r === maxrow)){
-							continue;
-						}
 						var pos = EFP.Ref.getColumnByIndex(c) + r;
 						this.addReference(id,pos,refs);
 						if(data && pos in data) {
@@ -458,15 +462,17 @@ var EFP = (function() {
 						}
 					}
 				}
-				range.push(b);
 				s.push([range]);
 			},
 			reference: function(item,s,id,refs,data){
 				var pos = item.val;
+				if(pos.indexOf('$') !== -1){
+					pos = pos.replace(/\$/g,'');
+				}
 				this.addReference(id,pos,refs);
 
 				var val;
-				if(data && item.val in data) {
+				if(data && pos in data) {
 					val = data[pos];
 				}else{
 					val = null;
@@ -769,12 +775,18 @@ var EFP = (function() {
 				}
 			}
 			this.column = col;
-			this.row = parseInt(row,10);
+			if(row.length > 0){
+				this.row = parseInt(row,10);
+			}
 			this.position = pos;
 			this.columnIndex = colIndex;
 		};
 		this.toString = function(){
 			return ''+this.valueOf();
+		};
+
+		this.isColumnReference = function(){
+			return !!this.column && !this.row;
 		};
 
 		this.setPosition(pos);

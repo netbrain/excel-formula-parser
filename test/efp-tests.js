@@ -162,6 +162,7 @@ test( "lex tRef", function() {
   deepEqual(p.parse('D1').valueOf(), 3);
   deepEqual(p.parse('E1').valueOf(), 3);
   deepEqual(p.parse('E3').valueOf(), null);
+  deepEqual(p.parse('$A$1').valueOf(), 1);
 });
 
 
@@ -184,6 +185,22 @@ test( "lex tRange", function() {
 
 });
 
+test( "lex tRange special case A:A", function() {
+    p.setData({
+    A1:1,
+    A2:2
+  });
+  var result = p.parse('A:A');
+  var range = result[0];
+  ok(range instanceof Array);
+  ok(range.isRange);
+  ok(range.length === 2);
+
+  for (var x = 0; x < range.length; x++){
+      range[x] = range[x].valueOf();
+  }
+  deepEqual( range, [1,2]);
+});
 
 test( "lex tIsect", function() {
   //TODO implement isect
@@ -408,7 +425,7 @@ test("COUNT",function(){
   equal(p.parse('COUNT(A1:A7)'),3);
   equal(p.parse('COUNT(1,40209,TRUE,"1","40209","Text",1/0)'),5);
 
-})
+});
 
 
 test("PERCENTILE",function(){
@@ -426,6 +443,7 @@ test("PERCENTILE",function(){
   equal(p.parse('PERCENTILE(A1:A6,50%)'),3.5);
   deepEqual(p.parse('PERCENTILE(A1:A6,2)'),Error.NUM);
   deepEqual(p.parse('PERCENTILE(A1:A6,"text")'),Error.VALUE);
+  equal(p.parse('PERCENTILE(A:A,0.2)'),2);
 
 });
 
