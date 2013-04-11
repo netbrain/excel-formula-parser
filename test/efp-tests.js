@@ -539,6 +539,15 @@ test("NORMDIST", function(){
   equal(p.parse('NORMDIST( 0.8, 1, 0.3, TRUE )').toFixed(9),0.252492538);
 });
 
+test("NORM.DIST", function(){
+  p.setData({
+    A1: 5.9
+  });
+
+  equal(p.parse('NORM.DIST( 50, 40, 20, FALSE )').toFixed(9),0.017603266);
+  equal(p.parse('NORM.DIST( 0.8, 1, 0.3, TRUE )').toFixed(9),0.252492538);
+});
+
 test("NORMSDIST", function(){
   equal(p.parse('NORMSDIST(-1.5)').toFixed(9), 0.066807201);
   equal(p.parse('NORMSDIST(0)'), 0.5);
@@ -554,4 +563,52 @@ test("NORMSINV", function(){
 
 test("LOGINV", function(){
   equal(p.parse('LOGINV(0.3,2,0.2)').toFixed(9), 6.653346075);
+});
+
+
+test("NORM.S.DIST", function(){
+  equal(p.parse('NORM.S.DIST(0.5,FALSE)').toFixed(9), 0.352065327);
+  equal(p.parse('NORM.S.DIST(0.8,TRUE)').toFixed(9), 0.788144601);
+});
+
+
+test("LOGNORMDIST", function(){
+  equal(p.parse('LOGNORMDIST(12,10,5)').toFixed(9), 0.066417115);
+});
+
+test("LOGNORM.DIST", function(){
+  equal(p.parse('LOGNORM.DIST(4,3.5,1.2,FALSE)').toFixed(9), 0.017618);
+  equal(p.parse('LOGNORM.DIST(12,10,5,TRUE)').toFixed(9), 0.066417115);
+});
+
+test("STDEV", function(){
+  p.setData({
+    "A1":1345,
+    "A2":1301,
+    "A3":1368,
+    "A4":1322,
+    "A5":1310,
+    "A6":1370,
+    "A7":1318,
+    "A8":1350,
+    "A9":1303,
+    "A10":1299
+  })
+  equal(p.parse('STDEV(A1:A10)').toFixed(5), 27.46392);
+});
+
+test("STDEV.S", function(){
+  p.setData({
+    "A1":1345,
+    "A2":1301,
+    "A3":1368,
+    "A4":1322,
+    "A5":1310,
+    "A6":1370,
+    "A7":1318,
+    "A8":1350,
+    "A9":1303,
+    "A10":1299
+  })
+  equal(p.parse('STDEV.S(A1:A10)').toFixed(9), 27.46391572);
 });

@@ -208,7 +208,7 @@ var EFP = (function() {
 
 		this.isNextFunc = function() {
 			var pos = this.pos;
-			if(this.accept("ABCDEFGHIJKLMNOPQRSTUVWXYZ") && this.isNextPar()) {
+			if(this.accept("ABCDEFGHIJKLMNOPQRSTUVWXYZ.") && this.isNextPar()) {
 				return true;
 			}
 			this.pos = pos;
@@ -442,9 +442,8 @@ var EFP = (function() {
 					minrow = Math.min(a.row, b.row);
 					maxrow = Math.max(a.row, b.row);
 				}else{
-					//TODO needs optimization
 					minrow = 1;
-					maxrow = 65536;
+					maxrow = scope.maxrow;
 				}
 
 				for(var c = mincol; c <= maxcol; c++) {
@@ -563,9 +562,16 @@ var EFP = (function() {
 
 		this.setData = function(data) {
 			this.data = data;
+			this.maxrow = 0;
+
+			var rowPattern = /[0-9]+$/g;
+			for(var pos in data){
+				var row = pos.match(rowPattern)[0];
+				this.maxrow = Math.max(this.maxrow,row);
+			}
 		};
 
-		this.data = data;
+		this.setData(data);
 
 		function isOperand(token) {
 			switch(token.type) {
@@ -995,55 +1001,55 @@ var EFP = (function() {
 		},
 		//EXCEL FUNCTIONS
 		"ABS": function() {
-			throw "not implemented";
+			throw "'ABS': not implemented";
 		},
 		"ACCRINT": function() {
-			throw "not implemented";
+			throw "'ACCRINT': not implemented";
 		},
 		"ACCRINTM": function() {
-			throw "not implemented";
+			throw "'ACCRINTM': not implemented";
 		},
 		"ACOS": function() {
-			throw "not implemented";
+			throw "'ACOS': not implemented";
 		},
 		"ACOSH": function() {
-			throw "not implemented";
+			throw "'ACOSH': not implemented";
 		},
 		"ADDRESS": function() {
-			throw "not implemented";
+			throw "'ADDRESS': not implemented";
 		},
 		"AMORDEGRC": function() {
-			throw "not implemented";
+			throw "'AMORDEGRC': not implemented";
 		},
 		"AMORLINC": function() {
-			throw "not implemented";
+			throw "'AMORLINC': not implemented";
 		},
 		"AND": function() {
-			throw "not implemented";
+			throw "'AND': not implemented";
 		},
 		"AREAS": function() {
-			throw "not implemented";
+			throw "'AREAS': not implemented";
 		},
 		"ASC": function() {
-			throw "not implemented";
+			throw "'ASC': not implemented";
 		},
 		"ASIN": function() {
-			throw "not implemented";
+			throw "'ASIN': not implemented";
 		},
 		"ASINH": function() {
-			throw "not implemented";
+			throw "'ASINH': not implemented";
 		},
 		"ATAN": function() {
-			throw "not implemented";
+			throw "'ATAN': not implemented";
 		},
 		"ATAN2": function() {
-			throw "not implemented";
+			throw "'ATAN2': not implemented";
 		},
 		"ATANH": function() {
-			throw "not implemented";
+			throw "'ATANH': not implemented";
 		},
 		"AVEDEV": function() {
-			throw "not implemented";
+			throw "'AVEDEV': not implemented";
 		},
 		"AVERAGE": function() {
 			var a = Array.prototype.slice.call(arguments);
@@ -1084,61 +1090,61 @@ var EFP = (function() {
 			return avg;
 		},
 		"BAHTTEXT": function() {
-			throw "not implemented";
+			throw "'BAHTTEXT': not implemented";
 		},
 		"BESSELI": function() {
-			throw "not implemented";
+			throw "'BESSELI': not implemented";
 		},
 		"BESSELJ": function() {
-			throw "not implemented";
+			throw "'BESSELJ': not implemented";
 		},
 		"BESSELK": function() {
-			throw "not implemented";
+			throw "'BESSELK': not implemented";
 		},
 		"BESSELY": function() {
-			throw "not implemented";
+			throw "'BESSELY': not implemented";
 		},
 		"BETA.DIST": function() {
-			throw "not implemented";
+			throw "'BETA.DIST': not implemented";
 		},
 		"BETA.INV": function() {
-			throw "not implemented";
+			throw "'BETA.INV': not implemented";
 		},
 		"BETADIST": function() {
-			throw "not implemented";
+			throw "'BETADIST': not implemented";
 		},
 		"BETAINV": function() {
-			throw "not implemented";
+			throw "'BETAINV': not implemented";
 		},
 		"BIN2DEC": function() {
-			throw "not implemented";
+			throw "'BIN2DEC': not implemented";
 		},
 		"BIN2HEX": function() {
-			throw "not implemented";
+			throw "'BIN2HEX': not implemented";
 		},
 		"BIN2OCT": function() {
-			throw "not implemented";
+			throw "'BIN2OCT': not implemented";
 		},
 		"BINOM.DIST": function() {
-			throw "not implemented";
+			throw "'BINOM.DIST': not implemented";
 		},
 		"BINOM.INV": function() {
-			throw "not implemented";
+			throw "'BINOM.INV': not implemented";
 		},
 		"BINOMDIST": function() {
-			throw "not implemented";
+			throw "'BINOMDIST': not implemented";
 		},
 		"CALL": function() {
-			throw "not implemented";
+			throw "'CALL': not implemented";
 		},
 		"CEILING": function() {
-			throw "not implemented";
+			throw "'CEILING': not implemented";
 		},
 		"CELL": function() {
-			throw "not implemented";
+			throw "'CELL': not implemented";
 		},
 		"CHAR": function() {
-			throw "not implemented";
+			throw "'CHAR': not implemented";
 		},
 		"CHIDIST": function(x,n) {
 			if(!(this.isNumber(x) && this.isNumber(n))){
@@ -1188,61 +1194,61 @@ var EFP = (function() {
 			return (1-p);
 		},
 		"CHIINV": function() {
-			throw "not implemented";
+			throw "'CHIINV': not implemented";
 		},
 		"CHISQ.DIST.RT": function() {
-			throw "not implemented";
+			throw "'CHISQ.DIST.RT': not implemented";
 		},
 		"CHISQ.INV.RT": function() {
-			throw "not implemented";
+			throw "'CHISQ.INV.RT': not implemented";
 		},
 		"CHISQ.TEST": function() {
-			throw "not implemented";
+			throw "'CHISQ.TEST': not implemented";
 		},
 		"CHITEST": function() {
-			throw "not implemented";
+			throw "'CHITEST': not implemented";
 		},
 		"CHOOSE": function() {
-			throw "not implemented";
+			throw "'CHOOSE': not implemented";
 		},
 		"CLEAN": function() {
-			throw "not implemented";
+			throw "'CLEAN': not implemented";
 		},
 		"CODE": function() {
-			throw "not implemented";
+			throw "'CODE': not implemented";
 		},
 		"COLUMN": function() {
-			throw "not implemented";
+			throw "'COLUMN': not implemented";
 		},
 		"COLUMNS": function() {
-			throw "not implemented";
+			throw "'COLUMNS': not implemented";
 		},
 		"COMBIN": function() {
-			throw "not implemented";
+			throw "'COMBIN': not implemented";
 		},
 		"COMPLEX": function() {
-			throw "not implemented";
+			throw "'COMPLEX': not implemented";
 		},
 		"CONCATENATE": function() {
-			throw "not implemented";
+			throw "'CONCATENATE': not implemented";
 		},
 		"CONFIDENCE": function() {
-			throw "not implemented";
+			throw "'CONFIDENCE': not implemented";
 		},
 		"CONFIDENCE.NORM": function() {
-			throw "not implemented";
+			throw "'CONFIDENCE.NORM': not implemented";
 		},
 		"CONVERT": function() {
-			throw "not implemented";
+			throw "'CONVERT': not implemented";
 		},
 		"CORREL": function() {
-			throw "not implemented";
+			throw "'CORREL': not implemented";
 		},
 		"COS": function() {
-			throw "not implemented";
+			throw "'COS': not implemented";
 		},
 		"COSH": function() {
-			throw "not implemented";
+			throw "'COSH': not implemented";
 		},
 		"COUNT": function() {
 			var a = Array.prototype.slice.call(arguments);
@@ -1264,10 +1270,10 @@ var EFP = (function() {
 			return count;
 		},
 		"COUNTA": function() {
-			throw "not implemented";
+			throw "'COUNTA': not implemented";
 		},
 		"COUNTBLANK": function() {
-			throw "not implemented";
+			throw "'COUNTBLANK': not implemented";
 		},
 		"COUNTIF": function(range,criteria) {
 			var count = 0;
@@ -1330,242 +1336,242 @@ var EFP = (function() {
 			return count;
 		},
 		"COUPDAYBS": function() {
-			throw "not implemented";
+			throw "'COUPDAYBS': not implemented";
 		},
 		"COUPDAYS": function() {
-			throw "not implemented";
+			throw "'COUPDAYS': not implemented";
 		},
 		"COUPDAYSNC": function() {
-			throw "not implemented";
+			throw "'COUPDAYSNC': not implemented";
 		},
 		"COUPNCD": function() {
-			throw "not implemented";
+			throw "'COUPNCD': not implemented";
 		},
 		"COUPNUM": function() {
-			throw "not implemented";
+			throw "'COUPNUM': not implemented";
 		},
 		"COUPPCD": function() {
-			throw "not implemented";
+			throw "'COUPPCD': not implemented";
 		},
 		"COVAR": function() {
-			throw "not implemented";
+			throw "'COVAR': not implemented";
 		},
 		"COVARIANCE.P": function() {
-			throw "not implemented";
+			throw "'COVARIANCE.P': not implemented";
 		},
 		"CRITBINOM": function() {
-			throw "not implemented";
+			throw "'CRITBINOM': not implemented";
 		},
 		"CUMIPMT": function() {
-			throw "not implemented";
+			throw "'CUMIPMT': not implemented";
 		},
 		"CUMPRINC": function() {
-			throw "not implemented";
+			throw "'CUMPRINC': not implemented";
 		},
 		"DATE": function() {
-			throw "not implemented";
+			throw "'DATE': not implemented";
 		},
 		"DATEVALUE": function() {
-			throw "not implemented";
+			throw "'DATEVALUE': not implemented";
 		},
 		"DAVERAGE": function() {
-			throw "not implemented";
+			throw "'DAVERAGE': not implemented";
 		},
 		"DAY": function() {
-			throw "not implemented";
+			throw "'DAY': not implemented";
 		},
 		"DAYS360": function() {
-			throw "not implemented";
+			throw "'DAYS360': not implemented";
 		},
 		"DB": function() {
-			throw "not implemented";
+			throw "'DB': not implemented";
 		},
 		"DCOUNT": function() {
-			throw "not implemented";
+			throw "'DCOUNT': not implemented";
 		},
 		"DCOUNTA": function() {
-			throw "not implemented";
+			throw "'DCOUNTA': not implemented";
 		},
 		"DDB": function() {
-			throw "not implemented";
+			throw "'DDB': not implemented";
 		},
 		"DEC2BIN": function() {
-			throw "not implemented";
+			throw "'DEC2BIN': not implemented";
 		},
 		"DEC2HEX": function() {
-			throw "not implemented";
+			throw "'DEC2HEX': not implemented";
 		},
 		"DEC2OCT": function() {
-			throw "not implemented";
+			throw "'DEC2OCT': not implemented";
 		},
 		"DEGREES": function() {
-			throw "not implemented";
+			throw "'DEGREES': not implemented";
 		},
 		"DELTA": function() {
-			throw "not implemented";
+			throw "'DELTA': not implemented";
 		},
 		"DEVSQ": function() {
-			throw "not implemented";
+			throw "'DEVSQ': not implemented";
 		},
 		"DGET": function() {
-			throw "not implemented";
+			throw "'DGET': not implemented";
 		},
 		"DISC": function() {
-			throw "not implemented";
+			throw "'DISC': not implemented";
 		},
 		"DMAX": function() {
-			throw "not implemented";
+			throw "'DMAX': not implemented";
 		},
 		"DMIN": function() {
-			throw "not implemented";
+			throw "'DMIN': not implemented";
 		},
 		"DOLLAR": function() {
-			throw "not implemented";
+			throw "'DOLLAR': not implemented";
 		},
 		"DOLLARDE": function() {
-			throw "not implemented";
+			throw "'DOLLARDE': not implemented";
 		},
 		"DOLLARFR": function() {
-			throw "not implemented";
+			throw "'DOLLARFR': not implemented";
 		},
 		"DPRODUCT": function() {
-			throw "not implemented";
+			throw "'DPRODUCT': not implemented";
 		},
 		"DSTDEV": function() {
-			throw "not implemented";
+			throw "'DSTDEV': not implemented";
 		},
 		"DSTDEVP": function() {
-			throw "not implemented";
+			throw "'DSTDEVP': not implemented";
 		},
 		"DSUM": function() {
-			throw "not implemented";
+			throw "'DSUM': not implemented";
 		},
 		"DURATION": function() {
-			throw "not implemented";
+			throw "'DURATION': not implemented";
 		},
 		"DVAR": function() {
-			throw "not implemented";
+			throw "'DVAR': not implemented";
 		},
 		"DVARP": function() {
-			throw "not implemented";
+			throw "'DVARP': not implemented";
 		},
 		"EDATE": function() {
-			throw "not implemented";
+			throw "'EDATE': not implemented";
 		},
 		"EFFECT": function() {
-			throw "not implemented";
+			throw "'EFFECT': not implemented";
 		},
 		"EOMONTH": function() {
-			throw "not implemented";
+			throw "'EOMONTH': not implemented";
 		},
 		"ERF": function(z,n) {
 			//TODO add n (upper limit)
 			return (2*this.GAUSS(this.SQRT(2)*z));
 		},
 		"ERF.PRECISE": function() {
-			throw "not implemented";
+			throw "'ERF.PRECISE': not implemented";
 		},
 		"ERFC": function() {
-			throw "not implemented";
+			throw "'ERFC': not implemented";
 		},
 		"ERFC.PRECISE": function() {
-			throw "not implemented";
+			throw "'ERFC.PRECISE': not implemented";
 		},
 		"ERROR.TYPE": function() {
-			throw "not implemented";
+			throw "'ERROR.TYPE': not implemented";
 		},
 		"EUROCONVERT": function() {
-			throw "not implemented";
+			throw "'EUROCONVERT': not implemented";
 		},
 		"EVEN": function() {
-			throw "not implemented";
+			throw "'EVEN': not implemented";
 		},
 		"EXACT": function() {
-			throw "not implemented";
+			throw "'EXACT': not implemented";
 		},
 		"EXP": function(x) {
 			return Math.exp(x);
 		},
 		"EXPON.DIST": function() {
-			throw "not implemented";
+			throw "'EXPON.DIST': not implemented";
 		},
 		"EXPONDIST": function() {
-			throw "not implemented";
+			throw "'EXPONDIST': not implemented";
 		},
 		"F.DIST.RT": function() {
-			throw "not implemented";
+			throw "'F.DIST.RT': not implemented";
 		},
 		"F.INV.RT": function() {
-			throw "not implemented";
+			throw "'F.INV.RT': not implemented";
 		},
 		"F.TEST": function() {
-			throw "not implemented";
+			throw "'F.TEST': not implemented";
 		},
 		"FACT": function() {
-			throw "not implemented";
+			throw "'FACT': not implemented";
 		},
 		"FACTDOUBLE": function() {
-			throw "not implemented";
+			throw "'FACTDOUBLE': not implemented";
 		},
 		"FALSE": function() {
 			return EFP.Bool.FALSE;
 		},
 		"FDIST": function() {
-			throw "not implemented";
+			throw "'FDIST': not implemented";
 		},
 		"FIND": function() {
-			throw "not implemented";
+			throw "'FIND': not implemented";
 		},
 		"FINDB": function() {
-			throw "not implemented";
+			throw "'FINDB': not implemented";
 		},
 		"FINV": function() {
-			throw "not implemented";
+			throw "'FINV': not implemented";
 		},
 		"FISHER": function() {
-			throw "not implemented";
+			throw "'FISHER': not implemented";
 		},
 		"FISHERINV": function() {
-			throw "not implemented";
+			throw "'FISHERINV': not implemented";
 		},
 		"FIXED": function() {
-			throw "not implemented";
+			throw "'FIXED': not implemented";
 		},
 		"FLOOR": function() {
-			throw "not implemented";
+			throw "'FLOOR': not implemented";
 		},
 		"FORECAST": function() {
-			throw "not implemented";
+			throw "'FORECAST': not implemented";
 		},
 		"FREQUENCY": function() {
-			throw "not implemented";
+			throw "'FREQUENCY': not implemented";
 		},
 		"FTEST": function() {
-			throw "not implemented";
+			throw "'FTEST': not implemented";
 		},
 		"FV": function() {
-			throw "not implemented";
+			throw "'FV': not implemented";
 		},
 		"FVSCHEDULE": function() {
-			throw "not implemented";
+			throw "'FVSCHEDULE': not implemented";
 		},
 		"GAMMA.DIST": function() {
-			throw "not implemented";
+			throw "'GAMMA.DIST': not implemented";
 		},
 		"GAMMA.INV": function() {
-			throw "not implemented";
+			throw "'GAMMA.INV': not implemented";
 		},
 		"GAMMADIST": function() {
-			throw "not implemented";
+			throw "'GAMMADIST': not implemented";
 		},
 		"GAMMAINV": function() {
-			throw "not implemented";
+			throw "'GAMMAINV': not implemented";
 		},
 		"GAMMALN": function() {
-			throw "not implemented";
+			throw "'GAMMALN': not implemented";
 		},
 		"GAMMALN.PRECISE": function() {
-			throw "not implemented";
+			throw "'GAMMALN.PRECISE': not implemented";
 		},
 		"GAUSS": function(z){
 			//Because NORM.S.DIST(0,True) always returns 0.5, GAUSS (z) will always be 0.5 less than NORM.S.DIST(z,True).
@@ -1574,172 +1580,172 @@ var EFP = (function() {
 			return g;
 		},
 		"GCD": function() {
-			throw "not implemented";
+			throw "'GCD': not implemented";
 		},
 		"GEOMEAN": function() {
-			throw "not implemented";
+			throw "'GEOMEAN': not implemented";
 		},
 		"GESTEP": function() {
-			throw "not implemented";
+			throw "'GESTEP': not implemented";
 		},
 		"GETPIVOTDATA": function() {
-			throw "not implemented";
+			throw "'GETPIVOTDATA': not implemented";
 		},
 		"GROWTH": function() {
-			throw "not implemented";
+			throw "'GROWTH': not implemented";
 		},
 		"HARMEAN": function() {
-			throw "not implemented";
+			throw "'HARMEAN': not implemented";
 		},
 		"HEX2BIN": function() {
-			throw "not implemented";
+			throw "'HEX2BIN': not implemented";
 		},
 		"HEX2DEC": function() {
-			throw "not implemented";
+			throw "'HEX2DEC': not implemented";
 		},
 		"HEX2OCT": function() {
-			throw "not implemented";
+			throw "'HEX2OCT': not implemented";
 		},
 		"HLOOKUP": function() {
-			throw "not implemented";
+			throw "'HLOOKUP': not implemented";
 		},
 		"HOUR": function() {
-			throw "not implemented";
+			throw "'HOUR': not implemented";
 		},
 		"HYPERLINK": function() {
-			throw "not implemented";
+			throw "'HYPERLINK': not implemented";
 		},
 		"HYPGEOM.DIST": function() {
-			throw "not implemented";
+			throw "'HYPGEOM.DIST': not implemented";
 		},
 		"HYPGEOMDIST": function() {
-			throw "not implemented";
+			throw "'HYPGEOMDIST': not implemented";
 		},
 		"IF": function(condition,tVal,fVal) {
 			return condition.toBool() ? tVal : fVal;
 		},
 		"IMABS": function() {
-			throw "not implemented";
+			throw "'IMABS': not implemented";
 		},
 		"IMAGINARY": function() {
-			throw "not implemented";
+			throw "'IMAGINARY': not implemented";
 		},
 		"IMARGUMENT": function() {
-			throw "not implemented";
+			throw "'IMARGUMENT': not implemented";
 		},
 		"IMCONJUGATE": function() {
-			throw "not implemented";
+			throw "'IMCONJUGATE': not implemented";
 		},
 		"IMCOS": function() {
-			throw "not implemented";
+			throw "'IMCOS': not implemented";
 		},
 		"IMDIV": function() {
-			throw "not implemented";
+			throw "'IMDIV': not implemented";
 		},
 		"IMEXP": function() {
-			throw "not implemented";
+			throw "'IMEXP': not implemented";
 		},
 		"IMLN": function() {
-			throw "not implemented";
+			throw "'IMLN': not implemented";
 		},
 		"IMLOG10": function() {
-			throw "not implemented";
+			throw "'IMLOG10': not implemented";
 		},
 		"IMLOG2": function() {
-			throw "not implemented";
+			throw "'IMLOG2': not implemented";
 		},
 		"IMPOWER": function() {
-			throw "not implemented";
+			throw "'IMPOWER': not implemented";
 		},
 		"IMPRODUCT": function() {
-			throw "not implemented";
+			throw "'IMPRODUCT': not implemented";
 		},
 		"IMREAL": function() {
-			throw "not implemented";
+			throw "'IMREAL': not implemented";
 		},
 		"IMSIN": function() {
-			throw "not implemented";
+			throw "'IMSIN': not implemented";
 		},
 		"IMSQRT": function() {
-			throw "not implemented";
+			throw "'IMSQRT': not implemented";
 		},
 		"IMSUB": function() {
-			throw "not implemented";
+			throw "'IMSUB': not implemented";
 		},
 		"IMSUM": function() {
-			throw "not implemented";
+			throw "'IMSUM': not implemented";
 		},
 		"INDEX": function() {
-			throw "not implemented";
+			throw "'INDEX': not implemented";
 		},
 		"INDIRECT": function() {
-			throw "not implemented";
+			throw "'INDIRECT': not implemented";
 		},
 		"INFO": function() {
-			throw "not implemented";
+			throw "'INFO': not implemented";
 		},
 		"INT": function() {
-			throw "not implemented";
+			throw "'INT': not implemented";
 		},
 		"INTERCEPT": function() {
-			throw "not implemented";
+			throw "'INTERCEPT': not implemented";
 		},
 		"INTRATE": function() {
-			throw "not implemented";
+			throw "'INTRATE': not implemented";
 		},
 		"IPMT": function() {
-			throw "not implemented";
+			throw "'IPMT': not implemented";
 		},
 		"IRR": function() {
-			throw "not implemented";
+			throw "'IRR': not implemented";
 		},
 		"ISODD": function() {
-			throw "not implemented";
+			throw "'ISODD': not implemented";
 		},
 		"ISPMT": function() {
-			throw "not implemented";
+			throw "'ISPMT': not implemented";
 		},
 		"ISTEXT": function() {
-			throw "not implemented";
+			throw "'ISTEXT': not implemented";
 		},
 		"JIS": function() {
-			throw "not implemented";
+			throw "'JIS': not implemented";
 		},
 		"KURT": function() {
-			throw "not implemented";
+			throw "'KURT': not implemented";
 		},
 		"LARGE": function() {
-			throw "not implemented";
+			throw "'LARGE': not implemented";
 		},
 		"LCM": function() {
-			throw "not implemented";
+			throw "'LCM': not implemented";
 		},
 		"LEFT": function() {
-			throw "not implemented";
+			throw "'LEFT': not implemented";
 		},
 		"LEFTB": function() {
-			throw "not implemented";
+			throw "'LEFTB': not implemented";
 		},
 		"LEN": function() {
-			throw "not implemented";
+			throw "'LEN': not implemented";
 		},
 		"LENB": function() {
-			throw "not implemented";
+			throw "'LENB': not implemented";
 		},
 		"LINEST": function() {
-			throw "not implemented";
+			throw "'LINEST': not implemented";
 		},
 		"LN": function(number) {
 			return Math.log(number);
 		},
 		"LOG": function() {
-			throw "not implemented";
+			throw "'LOG': not implemented";
 		},
 		"LOG10": function() {
-			throw "not implemented";
+			throw "'LOG10': not implemented";
 		},
 		"LOGEST": function() {
-			throw "not implemented";
+			throw "'LOGEST': not implemented";
 		},
 		"LOGINV": function(probability,mean,stdev) {
 			if(!(this.isNumber(probability) && this.isNumber(mean) && this.isNumber(stdev))){
@@ -1754,112 +1760,116 @@ var EFP = (function() {
 				return EFP.Error.Num;
 			}
 
-			return this.POWER(Math.E,(mean+stdev*this.NORMSINV(probability)))
+			return this.POWER(Math.E,(mean+stdev*this.NORMSINV(probability)));
 		},
-		"LOGNORM.DIST": function() {
-			throw "not implemented";
+		"LOGNORM.DIST": function(x,mean,stdev,cumulative) {
+			if(cumulative.toBool()){
+				return this["NORM.S.DIST"]((this.LN(x)-mean)/stdev,cumulative);
+			}else{
+				return this.NORMDIST(x,mean,stdev,cumulative);
+			}
 		},
 		"LOGNORM.INV": function(probability,mean,stdev) {
 			return this.LOGINV(probability,mean,stdev);
 		},
-		"LOGNORMDIST": function() {
-			throw "not implemented";
+		"LOGNORMDIST": function(x,mean,stdev) {
+			return this.NORMSDIST((this.LN(x)-mean)/stdev);
 		},
 		"LOOKUP": function() {
-			throw "not implemented";
+			throw "'LOOKUP': not implemented";
 		},
 		"LOWER": function() {
-			throw "not implemented";
+			throw "'LOWER': not implemented";
 		},
 		"MATCH": function() {
-			throw "not implemented";
+			throw "'MATCH': not implemented";
 		},
 		"MAX": function() {
-			throw "not implemented";
+			throw "'MAX': not implemented";
 		},
 		"MAXA": function() {
-			throw "not implemented";
+			throw "'MAXA': not implemented";
 		},
 		"MDETERM": function() {
-			throw "not implemented";
+			throw "'MDETERM': not implemented";
 		},
 		"MDURATION": function() {
-			throw "not implemented";
+			throw "'MDURATION': not implemented";
 		},
 		"MEDIAN": function() {
-			throw "not implemented";
+			throw "'MEDIAN': not implemented";
 		},
 		"MID": function() {
-			throw "not implemented";
+			throw "'MID': not implemented";
 		},
 		"MIDB": function() {
-			throw "not implemented";
+			throw "'MIDB': not implemented";
 		},
 		"MIN": function() {
-			throw "not implemented";
+			throw "'MIN': not implemented";
 		},
 		"MINA": function() {
-			throw "not implemented";
+			throw "'MINA': not implemented";
 		},
 		"MINUTE": function() {
-			throw "not implemented";
+			throw "'MINUTE': not implemented";
 		},
 		"MINVERSE": function() {
-			throw "not implemented";
+			throw "'MINVERSE': not implemented";
 		},
 		"MIRR": function() {
-			throw "not implemented";
+			throw "'MIRR': not implemented";
 		},
 		"MMULT": function() {
-			throw "not implemented";
+			throw "'MMULT': not implemented";
 		},
 		"MOD": function() {
-			throw "not implemented";
+			throw "'MOD': not implemented";
 		},
 		"MODE": function() {
-			throw "not implemented";
+			throw "'MODE': not implemented";
 		},
 		"MODE.SNGL": function() {
-			throw "not implemented";
+			throw "'MODE.SNGL': not implemented";
 		},
 		"MONTH": function() {
-			throw "not implemented";
+			throw "'MONTH': not implemented";
 		},
 		"MROUND": function() {
-			throw "not implemented";
+			throw "'MROUND': not implemented";
 		},
 		"MULTINOMIAL": function() {
-			throw "not implemented";
+			throw "'MULTINOMIAL': not implemented";
 		},
 		"N": function() {
-			throw "not implemented";
+			throw "'N': not implemented";
 		},
 		"NA": function() {
-			throw "not implemented";
+			throw "'NA': not implemented";
 		},
 		"NEGBINOM.DIST": function() {
-			throw "not implemented";
+			throw "'NEGBINOM.DIST': not implemented";
 		},
 		"NEGBINOMDIST": function() {
-			throw "not implemented";
+			throw "'NEGBINOMDIST': not implemented";
 		},
 		"NETWORKDAYS": function() {
-			throw "not implemented";
+			throw "'NETWORKDAYS': not implemented";
 		},
 		"NOMINAL": function() {
-			throw "not implemented";
+			throw "'NOMINAL': not implemented";
 		},
-		"NORM.DIST": function() {
-			throw "not implemented";
+		"NORM.DIST": function(x, mean, stdev, cumulative) {
+			return this.NORMDIST(x, mean, stdev, cumulative);
 		},
 		"NORM.INV": function() {
-			throw "not implemented";
+			throw "'NORM.INV': not implemented";
 		},
-		"NORM.S.DIST": function() {
-			throw "not implemented";
+		"NORM.S.DIST": function(z,cumulative) {
+			return this["NORM.DIST"](z,0,1,cumulative);
 		},
 		"NORM.S.INV": function() {
-			throw "not implemented";
+			throw "'NORM.S.INV': not implemented";
 		},
 		"NORMDIST": function(x, mean, stdev, cumulative) {
 			if(!this.isBool(cumulative)){
@@ -1873,7 +1883,7 @@ var EFP = (function() {
 			}
 		},
 		"NORMINV": function() {
-			throw "not implemented";
+			throw "'NORMINV': not implemented";
 		},
 		"NORMSDIST": function(z) {
 			return this.NORMDIST(z,0,1,this.TRUE());
@@ -1913,49 +1923,49 @@ var EFP = (function() {
 			return retVal;
 		},
 		"NOT": function() {
-			throw "not implemented";
+			throw "'NOT': not implemented";
 		},
 		"NOW": function() {
-			throw "not implemented";
+			throw "'NOW': not implemented";
 		},
 		"NPER": function() {
-			throw "not implemented";
+			throw "'NPER': not implemented";
 		},
 		"NPV": function() {
-			throw "not implemented";
+			throw "'NPV': not implemented";
 		},
 		"OCT2BIN": function() {
-			throw "not implemented";
+			throw "'OCT2BIN': not implemented";
 		},
 		"OCT2DEC": function() {
-			throw "not implemented";
+			throw "'OCT2DEC': not implemented";
 		},
 		"OCT2HEX": function() {
-			throw "not implemented";
+			throw "'OCT2HEX': not implemented";
 		},
 		"ODD": function() {
-			throw "not implemented";
+			throw "'ODD': not implemented";
 		},
 		"ODDFPRICE": function() {
-			throw "not implemented";
+			throw "'ODDFPRICE': not implemented";
 		},
 		"ODDFYIELD": function() {
-			throw "not implemented";
+			throw "'ODDFYIELD': not implemented";
 		},
 		"ODDLPRICE": function() {
-			throw "not implemented";
+			throw "'ODDLPRICE': not implemented";
 		},
 		"ODDLYIELD": function() {
-			throw "not implemented";
+			throw "'ODDLYIELD': not implemented";
 		},
 		"OFFSET": function() {
-			throw "not implemented";
+			throw "'OFFSET': not implemented";
 		},
 		"OR": function() {
-			throw "not implemented";
+			throw "'OR': not implemented";
 		},
 		"PEARSON": function() {
-			throw "not implemented";
+			throw "'PEARSON': not implemented";
 		},
 		"PERCENTILE": function(array,P) {
 			if(!this.isNumber(P)) return Error.VALUE;
@@ -1982,73 +1992,73 @@ var EFP = (function() {
 			}
 		},
 		"PERCENTILE.INC": function() {
-			throw "not implemented";
+			throw "'PERCENTILE.INC': not implemented";
 		},
 		"PERCENTRANK": function() {
-			throw "not implemented";
+			throw "'PERCENTRANK': not implemented";
 		},
 		"PERCENTRANK.INC": function() {
-			throw "not implemented";
+			throw "'PERCENTRANK.INC': not implemented";
 		},
 		"PERMUT": function() {
-			throw "not implemented";
+			throw "'PERMUT': not implemented";
 		},
 		"PHONETIC": function() {
-			throw "not implemented";
+			throw "'PHONETIC': not implemented";
 		},
 		"PI": function() {
 			return Math.PI;
 		},
 		"PMT": function() {
-			throw "not implemented";
+			throw "'PMT': not implemented";
 		},
 		"POISSON": function() {
-			throw "not implemented";
+			throw "'POISSON': not implemented";
 		},
 		"POISSON.DIST": function() {
-			throw "not implemented";
+			throw "'POISSON.DIST': not implemented";
 		},
 		"POWER": function(n,p) {
 			return Math.pow(n,p);
 		},
 		"PPMT": function() {
-			throw "not implemented";
+			throw "'PPMT': not implemented";
 		},
 		"PRICE": function() {
-			throw "not implemented";
+			throw "'PRICE': not implemented";
 		},
 		"PRICEDISC": function() {
-			throw "not implemented";
+			throw "'PRICEDISC': not implemented";
 		},
 		"PRICEMAT": function() {
-			throw "not implemented";
+			throw "'PRICEMAT': not implemented";
 		},
 		"PROB": function() {
-			throw "not implemented";
+			throw "'PROB': not implemented";
 		},
 		"PRODUCT": function() {
-			throw "not implemented";
+			throw "'PRODUCT': not implemented";
 		},
 		"PROPER": function() {
-			throw "not implemented";
+			throw "'PROPER': not implemented";
 		},
 		"PV": function() {
-			throw "not implemented";
+			throw "'PV': not implemented";
 		},
 		"QUARTILE": function() {
-			throw "not implemented";
+			throw "'QUARTILE': not implemented";
 		},
 		"QUARTILE.INC": function() {
-			throw "not implemented";
+			throw "'QUARTILE.INC': not implemented";
 		},
 		"QUOTIENT": function() {
-			throw "not implemented";
+			throw "'QUOTIENT': not implemented";
 		},
 		"RADIANS": function() {
-			throw "not implemented";
+			throw "'RADIANS': not implemented";
 		},
 		"RAND": function() {
-			throw "not implemented";
+			throw "'RAND': not implemented";
 		},
 		"RANDBETWEEN": function(bottom,top) {
 			if(this.isRef(bottom)){
@@ -2069,94 +2079,94 @@ var EFP = (function() {
 			return rand;
 		},
 		"RANK": function() {
-			throw "not implemented";
+			throw "'RANK': not implemented";
 		},
 		"RANK.EQ": function() {
-			throw "not implemented";
+			throw "'RANK.EQ': not implemented";
 		},
 		"RATE": function() {
-			throw "not implemented";
+			throw "'RATE': not implemented";
 		},
 		"RECEIVED": function() {
-			throw "not implemented";
+			throw "'RECEIVED': not implemented";
 		},
 		"REGISTER.ID": function() {
-			throw "not implemented";
+			throw "'REGISTER.ID': not implemented";
 		},
 		"REPLACE": function() {
-			throw "not implemented";
+			throw "'REPLACE': not implemented";
 		},
 		"REPLACEB": function() {
-			throw "not implemented";
+			throw "'REPLACEB': not implemented";
 		},
 		"REPT": function() {
-			throw "not implemented";
+			throw "'REPT': not implemented";
 		},
 		"RIGHT": function() {
-			throw "not implemented";
+			throw "'RIGHT': not implemented";
 		},
 		"RIGHTB": function() {
-			throw "not implemented";
+			throw "'RIGHTB': not implemented";
 		},
 		"ROMAN": function() {
-			throw "not implemented";
+			throw "'ROMAN': not implemented";
 		},
 		"ROUND": function() {
-			throw "not implemented";
+			throw "'ROUND': not implemented";
 		},
 		"ROUNDDOWN": function() {
-			throw "not implemented";
+			throw "'ROUNDDOWN': not implemented";
 		},
 		"ROUNDUP": function() {
-			throw "not implemented";
+			throw "'ROUNDUP': not implemented";
 		},
 		"ROW": function() {
-			throw "not implemented";
+			throw "'ROW': not implemented";
 		},
 		"ROWS": function() {
-			throw "not implemented";
+			throw "'ROWS': not implemented";
 		},
 		"RSQ": function() {
-			throw "not implemented";
+			throw "'RSQ': not implemented";
 		},
 		"RTD": function() {
-			throw "not implemented";
+			throw "'RTD': not implemented";
 		},
 		"SEARCH": function() {
-			throw "not implemented";
+			throw "'SEARCH': not implemented";
 		},
 		"SEARCHB": function() {
-			throw "not implemented";
+			throw "'SEARCHB': not implemented";
 		},
 		"SECOND": function() {
-			throw "not implemented";
+			throw "'SECOND': not implemented";
 		},
 		"SERIESSUM": function() {
-			throw "not implemented";
+			throw "'SERIESSUM': not implemented";
 		},
 		"SIGN": function() {
-			throw "not implemented";
+			throw "'SIGN': not implemented";
 		},
 		"SIN": function() {
-			throw "not implemented";
+			throw "'SIN': not implemented";
 		},
 		"SINH": function() {
-			throw "not implemented";
+			throw "'SINH': not implemented";
 		},
 		"SKEW": function() {
-			throw "not implemented";
+			throw "'SKEW': not implemented";
 		},
 		"SLN": function() {
-			throw "not implemented";
+			throw "'SLN': not implemented";
 		},
 		"SLOPE": function() {
-			throw "not implemented";
+			throw "'SLOPE': not implemented";
 		},
 		"SMALL": function() {
-			throw "not implemented";
+			throw "'SMALL': not implemented";
 		},
 		"SQL.REQUEST": function() {
-			throw "not implemented";
+			throw "'SQL.REQUEST': not implemented";
 		},
 		"SQRT": function(number) {
 			if(number < 0){
@@ -2169,34 +2179,45 @@ var EFP = (function() {
 			return this.SQRT(this.PI());
 		},
 		"STANDARDIZE": function() {
-			throw "not implemented";
+			throw "'STANDARDIZE': not implemented";
 		},
 		"STDEV": function() {
-			throw "not implemented";
+			var avg = this.AVERAGE.apply(this,arguments);
+			var sum = 0;
+			var len = arguments.length;
+			for(var x = 0; x < len; x++){
+				var a = arguments[x];
+				if(this.isRange(a) || this.isArray(a)){
+					sum += this.POWER(this.STDEV.apply(this,a),2);
+					continue;
+				}
+				sum += this.POWER((arguments[x]-avg),2)/(len-1);
+			}
+			return this.SQRT(sum);
 		},
 		"STDEV.P": function() {
-			throw "not implemented";
+			throw "'STDEV.P': not implemented";
 		},
 		"STDEV.S": function() {
-			throw "not implemented";
+			return this.STDEV.apply(this,arguments);
 		},
 		"STDEVA": function() {
-			throw "not implemented";
+			throw "'STDEVA': not implemented";
 		},
 		"STDEVP": function() {
-			throw "not implemented";
+			throw "'STDEVP': not implemented";
 		},
 		"STDEVPA": function() {
-			throw "not implemented";
+			throw "'STDEVPA': not implemented";
 		},
 		"STEYX": function() {
-			throw "not implemented";
+			throw "'STEYX': not implemented";
 		},
 		"SUBSTITUTE": function() {
-			throw "not implemented";
+			throw "'SUBSTITUTE': not implemented";
 		},
 		"SUBTOTAL": function() {
-			throw "not implemented";
+			throw "'SUBTOTAL': not implemented";
 		},
 		"SUM": function() {
 			var a = Array.prototype.slice.call(arguments);
@@ -2223,172 +2244,172 @@ var EFP = (function() {
 			return sum;
 		},
 		"SUMIF": function() {
-			throw "not implemented";
+			throw "'SUMIF': not implemented";
 		},
 		"SUMPRODUCT": function() {
-			throw "not implemented";
+			throw "'SUMPRODUCT': not implemented";
 		},
 		"SUMSQ": function() {
-			throw "not implemented";
+			throw "'SUMSQ': not implemented";
 		},
 		"SUMX2MY2": function() {
-			throw "not implemented";
+			throw "'SUMX2MY2': not implemented";
 		},
 		"SUMX2PY2": function() {
-			throw "not implemented";
+			throw "'SUMX2PY2': not implemented";
 		},
 		"SUMXMY2": function() {
-			throw "not implemented";
+			throw "'SUMXMY2': not implemented";
 		},
 		"SYD": function() {
-			throw "not implemented";
+			throw "'SYD': not implemented";
 		},
 		"T": function() {
-			throw "not implemented";
+			throw "'T': not implemented";
 		},
 		"T.DIST.2T": function() {
-			throw "not implemented";
+			throw "'T.DIST.2T': not implemented";
 		},
 		"T.DIST.RT": function() {
-			throw "not implemented";
+			throw "'T.DIST.RT': not implemented";
 		},
 		"T.INV.2T": function() {
-			throw "not implemented";
+			throw "'T.INV.2T': not implemented";
 		},
 		"T.TEST": function() {
-			throw "not implemented";
+			throw "'T.TEST': not implemented";
 		},
 		"TAN": function() {
-			throw "not implemented";
+			throw "'TAN': not implemented";
 		},
 		"TANH": function() {
-			throw "not implemented";
+			throw "'TANH': not implemented";
 		},
 		"TBILLEQ": function() {
-			throw "not implemented";
+			throw "'TBILLEQ': not implemented";
 		},
 		"TBILLPRICE": function() {
-			throw "not implemented";
+			throw "'TBILLPRICE': not implemented";
 		},
 		"TBILLYIELD": function() {
-			throw "not implemented";
+			throw "'TBILLYIELD': not implemented";
 		},
 		"TDIST": function() {
-			throw "not implemented";
+			throw "'TDIST': not implemented";
 		},
 		"TEXT": function() {
-			throw "not implemented";
+			throw "'TEXT': not implemented";
 		},
 		"TIME": function() {
-			throw "not implemented";
+			throw "'TIME': not implemented";
 		},
 		"TIMEVALUE": function() {
-			throw "not implemented";
+			throw "'TIMEVALUE': not implemented";
 		},
 		"TINV": function() {
-			throw "not implemented";
+			throw "'TINV': not implemented";
 		},
 		"TODAY": function() {
-			throw "not implemented";
+			throw "'TODAY': not implemented";
 		},
 		"TRANSPOSE": function() {
-			throw "not implemented";
+			throw "'TRANSPOSE': not implemented";
 		},
 		"TREND": function() {
-			throw "not implemented";
+			throw "'TREND': not implemented";
 		},
 		"TRIM": function() {
-			throw "not implemented";
+			throw "'TRIM': not implemented";
 		},
 		"TRIMMEAN": function() {
-			throw "not implemented";
+			throw "'TRIMMEAN': not implemented";
 		},
 		"TRUE": function() {
 			return EFP.Bool.TRUE;
 		},
 		"TRUNC": function() {
-			throw "not implemented";
+			throw "'TRUNC': not implemented";
 		},
 		"TTEST": function() {
-			throw "not implemented";
+			throw "'TTEST': not implemented";
 		},
 		"TYPE": function() {
-			throw "not implemented";
+			throw "'TYPE': not implemented";
 		},
 		"UPPER": function() {
-			throw "not implemented";
+			throw "'UPPER': not implemented";
 		},
 		"VALUE": function() {
-			throw "not implemented";
+			throw "'VALUE': not implemented";
 		},
 		"VAR": function() {
-			throw "not implemented";
+			throw "'VAR': not implemented";
 		},
 		"VAR.P": function() {
-			throw "not implemented";
+			throw "'VAR.P': not implemented";
 		},
 		"VAR.S": function() {
-			throw "not implemented";
+			throw "'VAR.S': not implemented";
 		},
 		"VARA": function() {
-			throw "not implemented";
+			throw "'VARA': not implemented";
 		},
 		"VARP": function() {
-			throw "not implemented";
+			throw "'VARP': not implemented";
 		},
 		"VARPA": function() {
-			throw "not implemented";
+			throw "'VARPA': not implemented";
 		},
 		"VDB": function() {
-			throw "not implemented";
+			throw "'VDB': not implemented";
 		},
 		"VLOOKUP": function() {
-			throw "not implemented";
+			throw "'VLOOKUP': not implemented";
 		},
 		"WEEKDAY": function() {
-			throw "not implemented";
+			throw "'WEEKDAY': not implemented";
 		},
 		"WEEKNUM": function() {
-			throw "not implemented";
+			throw "'WEEKNUM': not implemented";
 		},
 		"WEIBULL": function() {
-			throw "not implemented";
+			throw "'WEIBULL': not implemented";
 		},
 		"WEIBULL.DIST": function() {
-			throw "not implemented";
+			throw "'WEIBULL.DIST': not implemented";
 		},
 		"WORKDAY": function() {
-			throw "not implemented";
+			throw "'WORKDAY': not implemented";
 		},
 		"XIRR": function() {
-			throw "not implemented";
+			throw "'XIRR': not implemented";
 		},
 		"XNPV": function() {
-			throw "not implemented";
+			throw "'XNPV': not implemented";
 		},
 		"YEAR": function() {
-			throw "not implemented";
+			throw "'YEAR': not implemented";
 		},
 		"YEARFRAC": function() {
-			throw "not implemented";
+			throw "'YEARFRAC': not implemented";
 		},
 		"YIELD": function() {
-			throw "not implemented";
+			throw "'YIELD': not implemented";
 		},
 		"YIELDDISC": function() {
-			throw "not implemented";
+			throw "'YIELDDISC': not implemented";
 		},
 		"YIELDMAT": function() {
-			throw "not implemented";
+			throw "'YIELDMAT': not implemented";
 		},
 		"Z.TEST": function() {
-			throw "not implemented";
+			throw "'Z.TEST': not implemented";
 		},
 		"ZTEST": function() {
-			throw "not implemented";
+			throw "'ZTEST': not implemented";
 		},
 		"ISBLANK": function() {
-			throw "not implemented";
+			throw "'ISBLANK': not implemented";
 		},
 		"ISERR": function(v) {
 			if(v === EFP.Error.NA){
@@ -2409,10 +2430,10 @@ var EFP = (function() {
 			return EFP.Bool.FALSE;
 		},
 		"ISNA": function() {
-			throw "not implemented";
+			throw "'ISNA': not implemented";
 		},
 		"ISNONTEXT": function() {
-			throw "not implemented";
+			throw "'ISNONTEXT': not implemented";
 		},
 		"ISNUMBER": function(value) {
 			if(this.isNumber(value)){
