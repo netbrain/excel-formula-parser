@@ -447,6 +447,23 @@ test("PERCENTILE",function(){
 
 });
 
+test("PERCENTILE.INC",function(){
+  p.setData({
+    A1:0,
+    A2:1,
+    A3:2,
+    A4:3,
+    A5:4,
+    A6:5
+  });
+
+  equal(p.parse('PERCENTILE(A1:A6,0.2)'),1);
+  equal(p.parse('PERCENTILE(A1:A6,60%)'),3);
+  equal(p.parse('PERCENTILE(A1:A6,50%)'),2.5);
+  equal(p.parse('PERCENTILE(A1:A6,95%)'),4.75);
+
+});
+
 test("RANDBETWEEN",function(){
   p.setData({
     A1:1,

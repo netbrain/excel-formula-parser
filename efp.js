@@ -1991,8 +1991,8 @@ var EFP = (function() {
 				return array[k-1]+d*(array[k]-array[k-1]);
 			}
 		},
-		"PERCENTILE.INC": function() {
-			throw "'PERCENTILE.INC': not implemented";
+		"PERCENTILE.INC": function(array,P) {
+			return this.PERCENTILE(array,P);
 		},
 		"PERCENTRANK": function() {
 			throw "'PERCENTRANK': not implemented";
