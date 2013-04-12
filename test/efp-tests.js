@@ -610,7 +610,7 @@ test("STDEV", function(){
     "A8":1350,
     "A9":1303,
     "A10":1299
-  })
+  });
   equal(p.parse('STDEV(A1:A10)').toFixed(5), 27.46392);
 });
 
@@ -626,6 +626,6 @@ test("STDEV.S", function(){
     "A8":1350,
     "A9":1303,
     "A10":1299
-  })
+  });
   equal(p.parse('STDEV.S(A1:A10)').toFixed(9), 27.46391572);
 });
