@@ -562,6 +562,8 @@ var EFP = (function() {
 			}
 
 			if(valueStack.length === 1) {
+				//if(!(valueStack[0] instanceof Array))
+				//console.log(input+' = '+valueStack[0])
 				return valueStack[0];
 			} else if(valueStack.length === 0) {
 				return null;
@@ -997,6 +999,39 @@ var EFP = (function() {
 		escapeRegexSpecials: function(str){
 			return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 		},
+		sum: function(){
+			var a = Array.prototype.slice.call(arguments);
+			var resultObj = {
+				sum: 0,
+				summerizedNumbers: 0,
+				add: function(n){
+					this.sum += n;
+					this.summerizedNumbers++;
+				}
+			};
+			for(var x = 0; x < a.length; x++) {
+				if(this.isError(a[x])){
+					return a[x];
+				}
+
+				if(this.isNumber(a[x]) || this.isBool(a[x])) {
+					resultObj.add(a[x]);
+				}else if (this.isRef(a[x])){
+					if(this.isNumeric(a[x])){
+						resultObj.add(parseFloat(a[x]));
+					}
+				}else if(a[x] instanceof Array){
+					var result = this.sum.apply(this,a[x]);
+					resultObj.sum += result.sum;
+					resultObj.summerizedNumbers += result.summerizedNumbers;
+				}else if (!isNaN(a[x])){
+					resultObj.add(parseFloat(a[x]));
+				}else{
+					return EFP.Error.VALUE;
+				}
+			}
+			return resultObj;
+		},
 		//EXCEL FUNCTIONS
 		"ABS": function() {
 			throw "'ABS': not implemented";
@@ -1070,22 +1105,15 @@ var EFP = (function() {
 		},
 		"AVERAGEA": function() {
 			var a = Array.prototype.slice.call(arguments);
-			var sum,avg,length;
-			length = 0;
-			sum = this.SUM.apply(this,a);
 			if(this.isError(a)){
 				return a;
 			}
 
-			for(var x = 0; x < a.length; x++){
-				if(a[x] instanceof Array){
-					length += a[x].length;
-				}else{
-					length++;
-				}
+			var result = this.sum.apply(this,a);
+			if(this.isError(result)){
+				return result;
 			}
-			avg = this.div(sum,length);
-			return avg;
+			return this.div(result.sum,result.summerizedNumbers);
 		},
 		"BAHTTEXT": function() {
 			throw "'BAHTTEXT': not implemented";
@@ -2235,28 +2263,12 @@ var EFP = (function() {
 			throw "'SUBTOTAL': not implemented";
 		},
 		"SUM": function() {
-			var a = Array.prototype.slice.call(arguments);
-			var sum = 0;
-			for(var x = 0; x < a.length; x++) {
-				if(this.isError(a[x])){
-					return a[x];
-				}
-
-				if(this.isNumber(a[x]) || this.isBool(a[x])) {
-					sum += a[x];
-				}else if (this.isRef(a[x])){
-					if(this.isNumeric(a[x])){
-						sum += parseFloat(a[x]);
-					}
-				}else if(a[x] instanceof Array){
-					sum += this.SUM.apply(this,a[x]);
-				}else if (!isNaN(a[x])){
-					sum += parseFloat(a[x]);
-				}else{
-					return EFP.Error.VALUE;
-				}
+			var result = this.sum.apply(this,arguments);
+			if (this.isError(result)){
+				return result;
 			}
-			return sum;
+
+			return result.sum;
 		},
 		"SUMIF": function() {
 			throw "'SUMIF': not implemented";
