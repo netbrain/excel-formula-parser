@@ -892,7 +892,7 @@ var EFP = (function() {
 			return EFP.Bool.FALSE;
 		},
 		eq: function(a, b) {
-			if(a == b) return EFP.Bool.TRUE;
+			if(a.valueOf() == b.valueOf()) return EFP.Bool.TRUE;
 			return EFP.Bool.FALSE;
 		},
 		ge: function(a, b) {
