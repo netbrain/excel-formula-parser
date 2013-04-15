@@ -26,6 +26,7 @@ test( "lex tNum", function() {
   equal(p.parse("-10"),-10);
   equal(p.parse("+10"),10);
   equal(p.parse("1.121"),1.121);
+  equal(p.parse("1.121"),1.121);
 });
 
 
@@ -42,14 +43,26 @@ test( "lex tPercent", function() {
 });
 
 test( "lex tAdd", function() {
+  p.setData({
+    "A1":1,
+    "A2":2
+  });
+
  equal(p.parse("10+10"), 20);
  equal(p.parse("10+10+10"), 30);
+ equal(p.parse("A1+A2"),3);
 });
 
 
 test( "lex tSub", function() {
+  p.setData({
+    "A1":1,
+    "A2":2
+  });
+
  equal(p.parse("1-2"), -1);
  equal(p.parse("1-2-3"), -4);
+ equal(p.parse("A1-A2"),-1);
 });
 
 test( "lex tMul", function() {
@@ -69,6 +82,7 @@ test( "lex tPower", function() {
   equal(p.parse("3^2"), 9);
   equal(p.parse("3^3^3"), 19683);
   equal(p.parse("3^(3^3)"), 7625597484987);
+  equal(p.parse("3^2/2"),4.5);
 });
 
 test( "lex tConcat", function() {
@@ -418,8 +432,8 @@ test("COUNT",function(){
     A3:'TRUE',
     A4:'"1"',
     A5:'"Text"',
-    A6:'SUM(1/0)', //error
-    A7:'A1+A2'
+    A6:'1/0', //error
+    A7:'=A1+A2'
   });
 
   equal(p.parse('COUNT(A1:A7)'),3);
@@ -441,8 +455,8 @@ test("PERCENTILE",function(){
   equal(p.parse('PERCENTILE(A1:A6,0.2)'),2);
   equal(p.parse('PERCENTILE(A1:A6,60%)'),4);
   equal(p.parse('PERCENTILE(A1:A6,50%)'),3.5);
-  deepEqual(p.parse('PERCENTILE(A1:A6,2)'),Error.NUM);
-  deepEqual(p.parse('PERCENTILE(A1:A6,"text")'),Error.VALUE);
+  deepEqual(p.parse('PERCENTILE(A1:A6,2)'),EFP.Error.NUM);
+  deepEqual(p.parse('PERCENTILE(A1:A6,"text")'),EFP.Error.VALUE);
   equal(p.parse('PERCENTILE(A:A,0.2)'),2);
 
 });
@@ -615,17 +629,17 @@ test("STDEV", function(){
 });
 
 test("STDEV.S", function(){
+
   p.setData({
-    "A1":1345,
-    "A2":1301,
-    "A3":1368,
-    "A4":1322,
-    "A5":1310,
-    "A6":1370,
-    "A7":1318,
-    "A8":1350,
-    "A9":1303,
-    "A10":1299
+    A1:1,
+    A2:2,
+    A3:3,
+    A4:4,
+    A5:'"hallo"',
+    A6:6,
+    A7:7,
+    A8:'TRUE'
   });
-  equal(p.parse('STDEV.S(A1:A10)').toFixed(9), 27.46391572);
+
+  equal(p.parse('STDEV.S(A:A)'),2.3166067138525404);
 });

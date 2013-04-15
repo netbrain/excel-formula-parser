@@ -370,10 +370,20 @@ var EFP = (function() {
 				s.push(fn.percent(s.pop()));
 			},
 			subtraction: function(item,s){
-				this.evaluateOperator(fn.sub, s);
+				var argStack = s.splice(s.length-2,2);
+				if(argStack.length === 1){
+					argStack.unshift(0);
+				}
+				this.evaluateOperator(fn.sub, argStack);
+				s.push(argStack[0]);
 			},
 			addition: function(item,s){
-				this.evaluateOperator(fn.add, s);
+				var argStack = s.splice(s.length-2,2);
+				if(argStack.length === 1){
+					argStack.unshift(0);
+				}
+				this.evaluateOperator(fn.add, argStack);
+				s.push(argStack[0]);
 			},
 			division: function(item,s){
 				this.evaluateOperator(fn.div, s);
@@ -453,7 +463,7 @@ var EFP = (function() {
 						if(data && pos in data) {
 							var val = data[pos];
 							var ref = new EFP.Ref(pos, val, {
-								context: this,
+								context: scope,
 								fn: scope.parse,
 								id: id
 							});
@@ -477,7 +487,7 @@ var EFP = (function() {
 					val = null;
 				}
 				var ref = new EFP.Ref(pos, val, {
-								context: this,
+								context: scope,
 								fn: scope.parse,
 								id: id
 							});
@@ -852,23 +862,11 @@ var EFP = (function() {
 		percent: function(i) {
 			return i / 100;
 		},
-		add: function() {
-			if(arguments.length == 1){
-				return +arguments[0];
-			}else if(arguments.length == 2){
-				return arguments[0] + arguments[1];
-			}else{
-				return EFP.Error.VALUE;
-			}
+		add: function(a,b) {
+			return a + b;
 		},
-		sub: function() {
-			if(arguments.length == 1){
-				return -arguments[0];
-			}else if(arguments.length == 2){
-				return arguments[0] - arguments[1];
-			}else{
-				return EFP.Error.VALUE;
-			}
+		sub: function(a,b) {
+			return a - b;
 		},
 		mul: function(a, b) {
 			return a * b;
@@ -1759,8 +1757,7 @@ var EFP = (function() {
 			if(stdev <= 0){
 				return EFP.Error.Num;
 			}
-
-			return this.POWER(Math.E,(mean+stdev*this.NORMSINV(probability)));
+			return this.EXP(mean + stdev * this.NORMSINV(probability));
 		},
 		"LOGNORM.DIST": function(x,mean,stdev,cumulative) {
 			if(cumulative.toBool()){
@@ -1968,17 +1965,22 @@ var EFP = (function() {
 			throw "'PEARSON': not implemented";
 		},
 		"PERCENTILE": function(array,P) {
-			if(!this.isNumber(P)) return Error.VALUE;
-			if(P > 1 || P < 0) return Error.NUM;
+			if(!this.isNumber(P)) return EFP.Error.VALUE;
+			if(P > 1 || P < 0) return EFP.Error.NUM;
 
 			if(this.isRange(array)){
 				var a = array;
 				array = [];
 				for(var x = 0; x < a.length; x++){
-					array[x] = a[x].valueOf();
+					var v = a[x].valueOf();
+					if(this.isNumber(v)){
+						array.push(v);
+					}
 				}
 			}
-			array.sort();
+			array.sort(function(a,b){
+				return a-b;
+			});
 			var N = array.length;
 			var n = (N - 1) * P + 1;
 			if (k === 1){
@@ -2070,7 +2072,7 @@ var EFP = (function() {
 			}
 
 			if(!this.isNumber(bottom) || !this.isNumber(top)){
-				return Error.VALUE;
+				return EFP.Error.VALUE;
 			}
 
 			if(bottom > top) return Error.NUM;
@@ -2182,17 +2184,30 @@ var EFP = (function() {
 			throw "'STANDARDIZE': not implemented";
 		},
 		"STDEV": function() {
-			var avg = this.AVERAGE.apply(this,arguments);
-			var sum = 0;
 			var len = arguments.length;
+			var a = [];
+
+			//filter out unwanted values
 			for(var x = 0; x < len; x++){
-				var a = arguments[x];
-				if(this.isRange(a) || this.isArray(a)){
-					sum += this.POWER(this.STDEV.apply(this,a),2);
-					continue;
+				if(this.isNumber(arguments[x]) ||
+					this.isRange(arguments[x]) ||
+					this.isArray(arguments[x])){
+					a.push(arguments[x]);
 				}
-				sum += this.POWER((arguments[x]-avg),2)/(len-1);
 			}
+
+			var avg = this.AVERAGE.apply(this,a);
+			var sum = 0;
+			len = a.length;
+
+			for(x = 0; x < len; x++){
+				if(this.isRange(a[x]) || this.isArray(a[x])){
+					sum += this.POWER(this.STDEV.apply(this,a[x]),2);
+				}else if(this.isNumber(a[x])){
+					sum += this.POWER((a[x]-avg),2)/(len-1);
+				}
+			}
+
 			return this.SQRT(sum);
 		},
 		"STDEV.P": function() {
