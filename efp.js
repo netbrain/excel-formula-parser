@@ -770,7 +770,7 @@ var EFP = (function() {
 			if(typeof(this.value) === "number") {
 				return this.value;
 			}
-			if(!this.value){
+			if(this.value == null){
 				return null;
 			}
 			return fnObj.fn.call(fnObj.context, this.value, fnObj.id);
@@ -906,7 +906,7 @@ var EFP = (function() {
 			return EFP.Bool.FALSE;
 		},
 		ne: function(a, b) {
-			if(a !== b) return EFP.Bool.TRUE;
+			if(a.valueOf() != b.valueOf()) return EFP.Bool.TRUE;
 			return EFP.Bool.FALSE;
 		},
 		isect: function(a, b) {
