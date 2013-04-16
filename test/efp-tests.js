@@ -86,6 +86,10 @@ test( "lex tPower", function() {
 });
 
 test( "lex tConcat", function() {
+  p.setData({
+    A1: 0
+  });
+
   equal(p.parse('"ABC"&"DEF"'), "ABCDEF");
   equal(p.parse('8&"DEF"'), "8DEF");
   equal(p.parse('8&9'), "89");
@@ -93,7 +97,8 @@ test( "lex tConcat", function() {
   deepEqual(p.parse('1&'), EFP.Error.VALUE);
   deepEqual(p.parse('&1'), EFP.Error.VALUE);
   equal(p.parse('SUM(1,2)&3'), "33");
-  deepEqual(p.parse('A1&3'), "3");
+  deepEqual(p.parse('B1&3'), "3");
+  equal(p.parse('"<" & A1'),'<0');
 });
 test( "lex tLT", function() {
   deepEqual(p.parse('2<4').toBool(), true);
