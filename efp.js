@@ -453,22 +453,20 @@ var EFP = (function() {
 					maxrow = Math.max(a.row, b.row);
 				}else{
 					minrow = 1;
-					maxrow = scope.maxrow;
+					maxrow = scope.dataModel.getRowNum();
 				}
 
 				for(var c = mincol; c <= maxcol; c++) {
 					for(var r = minrow; r <= maxrow; r++) {
 						var pos = EFP.Ref.getColumnByIndex(c) + r;
 						this.addReference(id,pos,refs);
-						if(data && pos in data) {
-							var val = data[pos];
-							var ref = new EFP.Ref(pos, val, {
-								context: scope,
-								fn: scope.parse,
-								id: id
-							});
-							range.push(ref);
-						}
+						var val = data.getCell(pos);
+						var ref = new EFP.Ref(pos, val, {
+							context: scope,
+							fn: scope.parse,
+							id: id
+						});
+						range.push(ref);
 					}
 				}
 				s.push([range]);
@@ -480,12 +478,7 @@ var EFP = (function() {
 				}
 				this.addReference(id,pos,refs);
 
-				var val;
-				if(data && pos in data) {
-					val = data[pos];
-				}else{
-					val = null;
-				}
+				var val = data.getCell(pos);
 				var ref = new EFP.Ref(pos, val, {
 								context: scope,
 								fn: scope.parse,
@@ -546,7 +539,7 @@ var EFP = (function() {
 				throw 'Expected string as input';
 			}
 
-			var data = this.data;
+			var data = this.dataModel;
 			var stack = Lex(input);
 			stack = convertStackFromInfixToPostfix(stack);
 
@@ -570,20 +563,44 @@ var EFP = (function() {
 			}else{
 				throw "Could not evaluate " + JSON.stringify(valueStack);
 			}
-		},
+		};
 
-		this.setData = function(data) {
-			this.data = data;
-			this.maxrow = 0;
-
-			var rowPattern = /[0-9]+$/g;
-			for(var pos in data){
-				var row = pos.match(rowPattern)[0];
-				this.maxrow = Math.max(this.maxrow,row);
+		this.setData = function(data){
+			if(!(data && data.getCell && data.getRowNum)){
+				data = {
+					data:data,
+					getCell: function(pos){
+						return this.data && pos in this.data ? this.data[pos] : null;
+					},
+					getRowNum: function(){
+						// !! inefficient implementation !!
+						var maxrow = 0;
+						var rowPattern = /[0-9]+$/g;
+						for(var pos in this.data){
+							var match = pos.match(rowPattern);
+							if(match){
+								var row = match[0];
+								maxrow = Math.max(maxrow,row);
+							}
+						}
+						return maxrow;
+					}
+				};
 			}
+
+			if(!(data.getCell && typeof(data.getCell) === "function")){
+				throw "dataModel doesn't implement getCell";
+			}
+
+			if(!(data.getRowNum && typeof(data.getRowNum) === "function")){
+				throw "dataModel doesn't implement getRowNum";
+			}
+
+			this.dataModel = data;
 		};
 
 		this.setData(data);
+
 
 		function isOperand(token) {
 			switch(token.type) {
