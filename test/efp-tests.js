@@ -678,14 +678,20 @@ test("NORMINV", function(){
 });
 
 test("\"TRUE\"/\"FALSE\"",function(){
-  var T = p.parse('"TRUE"');
-  var F = p.parse('"FALSE"');
+  var T1 = p.parse('"TRUE"');
+  var F1 = p.parse('"FALSE"');
+  var T2 = p.parse('"true"');
+  var F2 = p.parse('"false"');
 
-  deepEqual(T,EFP.Bool.TRUE);
-  deepEqual(F,EFP.Bool.FALSE);
+  deepEqual(T1,EFP.Bool.TRUE);
+  deepEqual(F1,EFP.Bool.FALSE);
+  deepEqual(T2,EFP.Bool.TRUE);
+  deepEqual(F2,EFP.Bool.FALSE);
 
-  equal(T.valueOf(),true);
-  equal(F.valueOf(),false);
+  equal(T1.valueOf(),true);
+  equal(F1.valueOf(),false);
+  equal(T2.valueOf(),true);
+  equal(F2.valueOf(),false);
 });
 
 test("ISBLANK", function(){

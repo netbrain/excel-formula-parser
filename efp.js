@@ -48,9 +48,15 @@ var EFP = (function() {
 				}
 			},
 			bool:function(){
-				if(lexer.isNextConsume('TRUE') || lexer.isNextConsume('FALSE')){
+				if(lexer.isNextConsume('TRUE') ||
+					lexer.isNextConsume('true') ||
+					lexer.isNextConsume('FALSE') ||
+					lexer.isNextConsume('false')){
 					lexer.emit(type.BOOL);
-				}else if(lexer.isNext('"TRUE"') || lexer.isNext('"FALSE"')) {
+				}else if(lexer.isNext('"TRUE"') ||
+					lexer.isNext('"true"') ||
+					lexer.isNext('"FALSE"') ||
+					lexer.isNext('"false"')) {
 					lexer.next();
 					lexer.newStart();
 					this.bool();
@@ -429,9 +435,9 @@ var EFP = (function() {
 				s.push(fn.list.apply(fn,args));
 			},
 			boolean: function(item,s){
-				if(item.val === 'TRUE'){
+				if(item.val.toUpperCase() === 'TRUE'){
 					s.push(EFP.Bool.TRUE);
-				}else if(item.val === 'FALSE'){
+				}else if(item.val.toUpperCase() === 'FALSE'){
 					s.push(EFP.Bool.FALSE);
 				}else{
 					throw "Unexpeced value "+item.val;
@@ -630,7 +636,6 @@ var EFP = (function() {
 		function getPrecedence(token) {
 			switch(token.type) {
 			case type.LIST:
-			case type.CONCAT:
 				return -2;
 			case type.EQ:
 			case type.LT:
@@ -649,11 +654,13 @@ var EFP = (function() {
 				return 2;
 			case type.RANGE:
 			case type.ISECT:
-			case type.FUNC:
+			case type.CONCAT:
 				return 3;
+			case type.FUNC:
+				return 4;
 			case type.PAR:
 			case type.ARR:
-				return 4;
+				return 5;
 			default:
 				throw "Unknown presedence type! " + JSON.stringify(token);
 			}
@@ -1734,7 +1741,7 @@ var EFP = (function() {
 			}else if(this.isBlank(condition)){
 				return fVal;
 			}
-			throw "unknown condition type: " + typeof(condition);
+			throw "unknown condition ("+condition+") type: " + typeof(condition);
 		},
 		"IMABS": function() {
 			throw "'IMABS': not implemented";
