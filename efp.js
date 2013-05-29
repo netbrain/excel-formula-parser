@@ -2252,8 +2252,25 @@ var EFP = (function() {
 		"ROMAN": function() {
 			throw "'ROMAN': not implemented";
 		},
-		"ROUND": function() {
-			throw "'ROUND': not implemented";
+		"ROUND": function(number,num_digits) {
+			//TODO is there a more elegant way?
+			number = ''+number.valueOf();
+			var parts = number.split('.');
+			var k = parseInt(parts[0],10);
+			var d = parts[1] ? parseFloat('0.'+parts[1]) : 0;
+			if(k < 0) {
+				d *= -1;
+			}		
+
+			if(num_digits >= 0){
+				d = parseFloat(d.toFixed(num_digits));
+			}else{
+				k /= Math.pow(10,Math.abs(num_digits));
+				k = k.toFixed(0);
+				k = parseInt(k,10);
+				k *= Math.pow(10,Math.abs(num_digits));
+			}
+			return k+d;
 		},
 		"ROUNDDOWN": function() {
 			throw "'ROUNDDOWN': not implemented";

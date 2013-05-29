@@ -695,3 +695,27 @@ test("ISBLANK", function(){
   equal(p.parse('ISBLANK(A2)').toBool(),true);
   equal(p.parse('ISBLANK(A1)').toBool(),false);
 });
+
+test("ROUND", function(){
+  p.setData({
+    A2: '5.28',
+    A3: '5.9999',
+    A4: '99.5',
+    A5: '-6.3',
+    A6: '-100.5',
+    A7: '-22.45',
+    A8: '999',
+    A9: '991',
+    A10: '941',
+  });
+  equal(p.parse('ROUND(100.319,1)'),100.3);
+  equal(p.parse('ROUND(A2,1)'),5.3);
+  equal(p.parse('ROUND(A3,3)'),6);
+  equal(p.parse('ROUND(A4,0)'),100);
+  equal(p.parse('ROUND(A5,0)'),-6);
+  equal(p.parse('ROUND(A6,0)'),-101);
+  equal(p.parse('ROUND(A7,1)'),-22.5);
+  equal(p.parse('ROUND(A8,-1)'),1000);
+  equal(p.parse('ROUND(A9,-1)'),990);
+  equal(p.parse('ROUND(A10,-2)'),900);
+});
