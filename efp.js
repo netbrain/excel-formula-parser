@@ -630,6 +630,7 @@ var EFP = (function() {
 		function getPrecedence(token) {
 			switch(token.type) {
 			case type.LIST:
+			case type.CONCAT:
 				return -2;
 			case type.EQ:
 			case type.LT:
@@ -649,7 +650,6 @@ var EFP = (function() {
 			case type.RANGE:
 			case type.ISECT:
 			case type.FUNC:
-			case type.CONCAT:
 				return 3;
 			case type.PAR:
 			case type.ARR:
