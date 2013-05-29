@@ -184,7 +184,7 @@ test( "lex tRef", function() {
   deepEqual(p.parse('C1').valueOf(), "STRING");
   deepEqual(p.parse('D1').valueOf(), 3);
   deepEqual(p.parse('E1').valueOf(), 3);
-  deepEqual(p.parse('E3').valueOf(), null);
+  deepEqual(p.parse('E3').valueOf(), null); // blank cell should yield 0 when referenced to
   deepEqual(p.parse('$A$1').valueOf(), 1);
 });
 
@@ -310,7 +310,9 @@ test( "SUM",function(){
     A7:'TRUE',
     A8:1,
     A9:'1',
-    A10:''
+    A10:'',
+    CH10:1,
+    CH20:1
   });
   equal(p.parse('SUM()'),0);
   equal(p.parse('SUM(A1:A5)'),35);
@@ -326,6 +328,7 @@ test( "SUM",function(){
   equal(p.parse('SUM(A8:B8)'),1);
   equal(p.parse('SUM(A9:B9)'),1);
   equal(p.parse('SUM(A9:A10)'),1);
+  equal(p.parse('SUM(CH10:CH20)'),2);
 
 });
 
@@ -508,12 +511,14 @@ test("IF",function(){
     A1:5,
     B1:4,
     A2:5,
-    B2:0
+    B2:0,
+    A3:'TRUE'
   });
 
  deepEqual(p.parse('IF(B1=0, "div by zero", A1/B1)').valueOf(),1.25);
  deepEqual(p.parse('IF(B2=0, "div by zero", A2/B2)').valueOf(),'div by zero');
  deepEqual(p.parse('IF(B2=0, IF(TRUE,A1,B1), A2/B2)').valueOf(),5);
+ deepEqual(p.parse('IF(A3, TRUE, FALSE)').toBool(),true);
 });
 
 
@@ -617,6 +622,7 @@ test("LOGNORMDIST", function(){
 });
 
 test("LOGNORM.DIST", function(){
+  //TODO fix lognormdist with accumulative set to FALSE 
   //equal(p.parse('LOGNORM.DIST(4,3.5,1.2,FALSE)').toFixed(9), 0.017618);
   equal(p.parse('LOGNORM.DIST(12,10,5,TRUE)').toFixed(9), 0.066417115);
 });
@@ -651,4 +657,41 @@ test("STDEV.S", function(){
   });
 
   equal(p.parse('STDEV.S(A:A)'),2.3166067138525404);
+});
+
+
+test("AND", function(){
+  equal(p.parse('AND(TRUE,TRUE,TRUE)').toBool(),true);
+  equal(p.parse('AND(TRUE,FALSE,TRUE)').toBool(),false);
+  equal(p.parse('AND(5<=5,5>=1)').toBool(),true);
+});
+
+
+test("NORMINV", function(){
+  equal(p.parse('=NORMINV(0.908789,40,1.5)').toFixed(0),42);
+  deepEqual(p.parse('=NORMINV(-0.1,40,1.5)'),EFP.Error.NUM);
+  deepEqual(p.parse('=NORMINV(1.1,40,1.5)'),EFP.Error.NUM);
+  deepEqual(p.parse('=NORMINV(0.5,40,0)'),EFP.Error.NUM);
+  deepEqual(p.parse('=NORMINV(-0.1,"non-numeric",1.5)'),EFP.Error.VALUE);
+
+
+});
+
+test("\"TRUE\"/\"FALSE\"",function(){
+  var T = p.parse('"TRUE"');
+  var F = p.parse('"FALSE"');
+
+  deepEqual(T,EFP.Bool.TRUE);
+  deepEqual(F,EFP.Bool.FALSE);
+
+  equal(T.valueOf(),true);
+  equal(F.valueOf(),false);
+});
+
+test("ISBLANK", function(){
+  p.setData({
+    A1: '"NOTBLANK"'
+  });
+  equal(p.parse('ISBLANK(A2)').toBool(),true);
+  equal(p.parse('ISBLANK(A1)').toBool(),false);
 });

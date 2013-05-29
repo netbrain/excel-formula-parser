@@ -47,6 +47,17 @@ var EFP = (function() {
 					lexer.newStart();
 				}
 			},
+			bool:function(){
+				if(lexer.isNextConsume('TRUE') || lexer.isNextConsume('FALSE')){
+					lexer.emit(type.BOOL);
+				}else if(lexer.isNext('"TRUE"') || lexer.isNext('"FALSE"')) {
+					lexer.next();
+					lexer.newStart();
+					this.bool();
+					lexer.next();
+					lexer.newStart();
+				}
+			},			
 			str: function() {
 				if(lexer.isNextConsume('"')) {
 					if(lexer.ignoreUntil('"')) {
@@ -54,11 +65,6 @@ var EFP = (function() {
 					} else {
 						throw "Error occured parsing string!";
 					}
-				}
-			},
-			bool:function(){
-				if(lexer.isNextConsume('TRUE') || lexer.isNextConsume('FALSE')) {
-					lexer.emit(type.BOOL);
 				}
 			},
 			ne: function() {
@@ -624,6 +630,7 @@ var EFP = (function() {
 		function getPrecedence(token) {
 			switch(token.type) {
 			case type.LIST:
+				return -2;
 			case type.EQ:
 			case type.LT:
 			case type.LE:
@@ -652,6 +659,27 @@ var EFP = (function() {
 			}
 		}
 
+		function isUnaryOperator(stack,x){
+			var token = stack[x];
+			var isAddOrSub = token.type === type.SUB || token.type === type.ADD;
+			if(isAddOrSub){
+				if(x === 0){
+					return true;
+				}
+				var prevToken = stack[x-1];
+				switch(prevToken.type){
+					case type.NUM:
+					case type.REF:
+					case type.PAR:
+					case type.FUNC:
+						return false;
+					default:
+						return true;
+				}
+			}
+			return false;
+		}
+
 		function convertStackFromInfixToPostfix(stack) {
 
 			function logStack(stack) {
@@ -664,18 +692,24 @@ var EFP = (function() {
 
 			var newStack = [];
 			var operatorStack = [];
-			while(stack.length > 0) {
-				var token = stack.shift();
-				////console.log('new token: ' + token.val);
+			for (var x = 0; x < stack.length; x++){
+				var token = stack[x];
+				//console.log('new token: ' + token.val);
 				if(isOperand(token)) {
 					newStack.push(token);
 					//console.log('pushing it to stack as it is an operand: ' + logStack(newStack));
 				} else {
+					//convert/cheat/hack unary +/- operators into binary operators.
+					if(isUnaryOperator(stack,x)){
+						newStack.push({
+							type: type.NUM,
+							val: '0'
+						});
+					}
 					if(operatorStack.length === 0) {
 						operatorStack.push(token);
 						//console.log('pushing it to operatorStack as stack is zero lenght: ' + logStack(operatorStack));
 					} else {
-
 						while(true) {
 							if(operatorStack.length === 0) {
 								break;
@@ -759,9 +793,11 @@ var EFP = (function() {
 	EFP.Ref = function(pos, value, fnObj) {
 		this.valueOf = function() {
 			var value = this.referenceValue();
+
 			while(value && typeof(value) === "object"){
 				value = value.valueOf();
 			}
+
 			return value;
 		};
 
@@ -795,7 +831,6 @@ var EFP = (function() {
 
 		this.setPosition = function(pos) {
 			var col = "";
-			var colIndex = -1;
 			var row = "";
 			for(var i = 0; i < pos.length; i++) {
 				var charCode = pos.charCodeAt(i);
@@ -803,7 +838,6 @@ var EFP = (function() {
 				if(charCode >= 65 && charCode <= 90) {
 					//A-Z
 					col += pos[i];
-					colIndex += iCode + Math.pow(26, i);
 				} else if(charCode >= 48 && charCode <= 57) {
 					//0-9
 					row += pos[i];
@@ -814,7 +848,7 @@ var EFP = (function() {
 				this.row = parseInt(row,10);
 			}
 			this.position = pos;
-			this.columnIndex = colIndex;
+			this.columnIndex = EFP.Ref.getColumnIndex(this.column);
 		};
 		this.toString = function(){
 			return ''+this.valueOf();
@@ -835,6 +869,15 @@ var EFP = (function() {
 
 		this.value = value;
 	};
+
+	EFP.Ref.getColumnIndex = function(name){
+        var index = -1;
+        var cArray = name.split('').reverse();
+        for(var x = 0; x < cArray.length; x++){
+            index += (Math.pow(26,x)*(cArray[x].charCodeAt(0)-65+1));
+        }
+        return index;
+	}
 
 	EFP.Ref.getColumnByIndex = function(i) {
 		var start = 65; //A       
@@ -903,28 +946,28 @@ var EFP = (function() {
 			return (''+a)+(''+b);
 		},
 		lt: function(a, b) {
-			if(a < b) return EFP.Bool.TRUE;
-			return EFP.Bool.FALSE;
+			if(a < b) return this.TRUE();
+			return this.FALSE();
 		},
 		le: function(a, b) {
-			if(a <= b) return EFP.Bool.TRUE;
-			return EFP.Bool.FALSE;
+			if(a <= b) return this.TRUE();
+			return this.FALSE();
 		},
 		eq: function(a, b) {
-			if(a.valueOf() == b.valueOf()) return EFP.Bool.TRUE;
-			return EFP.Bool.FALSE;
+			if(a.valueOf() == b.valueOf()) return this.TRUE();
+			return this.FALSE();
 		},
 		ge: function(a, b) {
-			if(a >= b) return EFP.Bool.TRUE;
-			return EFP.Bool.FALSE;
+			if(a >= b) return this.TRUE();
+			return this.FALSE();
 		},
 		gt: function(a, b) {
-			if(a > b) return EFP.Bool.TRUE;
-			return EFP.Bool.FALSE;
+			if(a > b) return this.TRUE();
+			return this.FALSE();
 		},
 		ne: function(a, b) {
-			if(a.valueOf() != b.valueOf()) return EFP.Bool.TRUE;
-			return EFP.Bool.FALSE;
+			if(a.valueOf() != b.valueOf()) return this.TRUE();
+			return this.FALSE();
 		},
 		isect: function(a, b) {
 			return a + " " + b;
@@ -1004,6 +1047,17 @@ var EFP = (function() {
 		isArgList: function(v){
 			return v instanceof Array && v.isArgList === true;
 		},
+		isBlank: function(v){
+			if(v === null || v === ''){
+				return true;
+			}
+
+			if (typeof(v) === "object"){
+				return this.isBlank(v.valueOf());
+			}
+
+			return false;
+		},
 		contains: function(str,s){
 			return str.indexOf(s) !== -1;
 		},
@@ -1075,7 +1129,15 @@ var EFP = (function() {
 			throw "'AMORLINC': not implemented";
 		},
 		"AND": function() {
-			throw "'AND': not implemented";
+			for(var x = 0; x < arguments.length; x++){
+				var logicalTest = arguments[x];
+				if(this.isBool(logicalTest)){
+					if(!logicalTest.toBool()){
+						return this.FALSE();
+					}
+				}
+			}
+			return this.TRUE();
 		},
 		"AREAS": function() {
 			throw "'AREAS': not implemented";
@@ -1665,7 +1727,14 @@ var EFP = (function() {
 			throw "'HYPGEOMDIST': not implemented";
 		},
 		"IF": function(condition,tVal,fVal) {
-			return condition.toBool() ? tVal : fVal;
+			if(this.isRef(condition)){
+				return this.IF(condition.referenceValue(),tVal,fVal)
+			}else if(this.isBool(condition)){
+				return condition.toBool() ? tVal : fVal;
+			}else if(this.isBlank(condition)){
+				return fVal;
+			}
+			throw "unknown condition type: " + typeof(condition);
 		},
 		"IMABS": function() {
 			throw "'IMABS': not implemented";
@@ -1904,8 +1973,8 @@ var EFP = (function() {
 		"NORM.DIST": function(x, mean, stdev, cumulative) {
 			return this.NORMDIST(x, mean, stdev, cumulative);
 		},
-		"NORM.INV": function() {
-			throw "'NORM.INV': not implemented";
+		"NORM.INV": function(probability,mean,stdev) {
+			return this.NORMINV(probability,mean,stdev);
 		},
 		"NORM.S.DIST": function(z,cumulative) {
 			return this["NORM.DIST"](z,0,1,cumulative);
@@ -1924,8 +1993,20 @@ var EFP = (function() {
 				return ((1/(this.SQRT(2*this.PI())*stdev))*this.POWER(Math.E,(-(this.POWER(x-mean,2)/(2*this.POWER(stdev,2))))));
 			}
 		},
-		"NORMINV": function() {
-			throw "'NORMINV': not implemented";
+		"NORMINV": function(probability,mean,stdev) {
+			if(!(this.isNumber(probability) && this.isNumber(mean) && this.isNumber(stdev))){
+				return EFP.Error.VALUE;
+			}
+
+			if(probability < 0 || probability > 1){
+				return EFP.Error.NUM;
+			}
+
+			if(stdev <= 0){
+				return EFP.Error.NUM;
+			}
+
+			return mean+stdev*this.NORMSINV(probability);
 		},
 		"NORMSDIST": function(z) {
 			return this.NORMDIST(z,0,1,this.TRUE());
@@ -2026,17 +2107,30 @@ var EFP = (function() {
 			array.sort(function(a,b){
 				return a-b;
 			});
+
 			var N = array.length;
-			var n = (N - 1) * P + 1;
-			if (k === 1){
-				return array[0];
-			}else if(k === N){
-				return array[N-1];
-			}else{
-				var k = Math.floor(n);
-				var d = n % 1;
-				return array[k-1]+d*(array[k]-array[k-1]);
+			var n = [P*(N-1)+1,P*(N+1)];
+
+			var p = [];
+
+			for(var x = 0; x < 2; x++){
+				var d = n[x] % 1;
+				var k = n[x] - d;
+
+
+				if(k === 0 || k === N){
+					p[x] = array[x];
+					break;
+				}
+
+				p[x] = array[k-1]+d*(array[k]-array[k-1]);
 			}
+
+			//Excel impl
+			return p[0]; 
+
+			//NIST impl
+			//return (p[0]+p[1])/2;
 		},
 		"PERCENTILE.INC": function(array,P) {
 			return this.PERCENTILE(array,P);
@@ -2452,8 +2546,8 @@ var EFP = (function() {
 		"ZTEST": function() {
 			throw "'ZTEST': not implemented";
 		},
-		"ISBLANK": function() {
-			throw "'ISBLANK': not implemented";
+		"ISBLANK": function(v) {
+			return this.isBlank(v) ? this.TRUE() : this.FALSE();
 		},
 		"ISERR": function(v) {
 			if(v === EFP.Error.NA){
@@ -2463,15 +2557,15 @@ var EFP = (function() {
 		},
 		"ISERROR": function(v) {
 			if(this.isError(v)){
-				return EFP.Bool.TRUE;
+				return this.TRUE();
 			}
-			return EFP.Bool.FALSE;
+			return this.FALSE();
 		},
 		"ISLOGICAL": function() {
 			if(this.isBool(v)){
-				return EFP.Bool.TRUE;
+				return this.TRUE();
 			}
-			return EFP.Bool.FALSE;
+			return this.FALSE();
 		},
 		"ISNA": function() {
 			throw "'ISNA': not implemented";
@@ -2481,21 +2575,21 @@ var EFP = (function() {
 		},
 		"ISNUMBER": function(value) {
 			if(this.isNumber(value)){
-				return EFP.Bool.TRUE;
+				return this.TRUE();
 			}
-			return EFP.Bool.FALSE;
+			return this.FALSE();
 		},
 		"ISREF": function(v) {
 			if(this.isRef(v)){
-				return EFP.Bool.TRUE;
+				return this.TRUE();
 			}
-			return EFP.Bool.FALSE;
+			return this.FALSE();
 		},
 		"ISTEXT	": function(v) {
 			if(this.isString(v)){
-				return EFP.Bool.TRUE;
+				return this.TRUE();
 			}
-			return EFP.Bool.FALSE;
+			return this.FALSE();
 		}
 	};
 })();
